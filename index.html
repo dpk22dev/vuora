@@ -6,7 +6,10 @@
     // on connection to server, ask for user's name with an anonymous callback
     socket.on('connect', function(){
         // call the server-side function 'adduser' and send one parameter (value of prompt)
-        socket.emit('adduser', prompt("What's your name?"));
+        var user = {};
+        user.username = prompt("What's your name?");
+        user.conf = "meeting1";
+        socket.emit('adduser', user);
     });
 
     function upvote(id){
@@ -65,10 +68,6 @@
     });
 
 </script>
-<div style="float:left;width:100px;border-right:1px solid black;height:300px;padding:10px;overflow:scroll-y;">
-    <b>ROOMS</b>
-    <div id="rooms"></div>
-</div>
 <div style="float:left;width:300px;height:250px;overflow:scroll-y;padding:10px;">
     <div id="conversation"></div>
     <input id="data" style="width:200px;" />
