@@ -15,8 +15,17 @@
     "serve-favicon": "~2.3.0",
     "hashmap": "^2.3.0",
     "http": "0.0.0",
+    "stable": "^0.1.6",
+    "async": "^2.5.0",
+    "async-map": "^0.1.0",
+    "https": "^1.0.0",
+    "mongodb": "^2.2.31",
+    "mongoskin": "^2.1.0",
+    "redis": "^2.8.0",
+    "request": "^2.83.0",
+    "shortid": "^2.2.8",
     "socket.io": "^2.0.3",
-    "stable": "^0.1.6"
-
+    "string-format": "^0.5.0",
+    "uuid": "^3.1.0"
   }
 }
