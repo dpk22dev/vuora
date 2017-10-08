@@ -44,7 +44,10 @@ router.get('/lclbk', function (req, res) {
     var params = req.query;
     var code = params.code;
     linkedin.getProfile(code);
-    res.sendFile('thanks.html', {root: path.join(__dirname, '../public/html')});
+    response.writeHead(301,
+        {Location: 'http://localhost:3000'}
+    );
+    response.end();
 });
 
 router.get('/gclbk', function (req, res) {
@@ -55,7 +58,7 @@ router.get('/gclbk', function (req, res) {
 });
 
 router.get('/qmap/:vconf', function (req, res) {
-    vconf.getQuestionMap(req.params.vconf, function(err, response){
+    vconf.getQuestionMap(req.params.vconf, function (err, response) {
         res.send(response);
     });
 });
