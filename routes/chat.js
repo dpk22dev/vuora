@@ -44,10 +44,10 @@ router.get('/lclbk', function (req, res) {
     var params = req.query;
     var code = params.code;
     linkedin.getProfile(code);
-    response.writeHead(301,
+    res.writeHead(301,
         {Location: 'http://localhost:3000'}
     );
-    response.end();
+    res.end();
 });
 
 router.get('/gclbk', function (req, res) {
