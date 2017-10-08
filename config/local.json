@@ -1,0 +1,12 @@
+{
+  "server" :{
+    "domain": "localhost",
+    "port": 3000
+  },
+  "youtube" :{
+    "broadcastApi" : {
+      "url": "https://www.googleapis.com/youtube/v3/liveBroadcasts",
+      "scope": "https://www.googleapis.com/auth/youtube"
+    }
+  }
+}
