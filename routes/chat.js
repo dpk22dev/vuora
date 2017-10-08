@@ -43,18 +43,27 @@ router.get('/glogin', function (req, res, next) {
 router.get('/lclbk', function (req, res) {
     var params = req.query;
     var code = params.code;
-    linkedin.getProfile(code);
-    res.writeHead(301,
-        {Location: 'http://localhost:3000'}
-    );
-    res.end();
+    linkedin.getProfile(code, function(user){
+        var id = user.id;
+        res.cookie('jarvis', id);
+        res.writeHead(301,
+            {Location: 'http://localhost:8080'}
+        );
+        res.end();
+    });
 });
 
 router.get('/gclbk', function (req, res) {
     var params = req.query;
     var code = params.code;
-    linkedin.getProfile(code);
-    res.sendFile('thanks.html', {root: path.join(__dirname, '../public/html')});
+    linkedin.getProfile(code, function (response) {
+        var id = response.id;
+        res.cookie('jarvis', id, {maxAge: 900000, httpOnly: true});
+        res.writeHead(301,
+            {Location: 'http://localhost:8080'}
+        );
+        res.end();
+    });
 });
 
 router.get('/qmap/:vconf', function (req, res) {
