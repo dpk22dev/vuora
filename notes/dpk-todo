@@ -1,0 +1,51 @@
+todo
+====
+Created Monday 02 October 2017
+
+google apis with nodejs: https://developers.google.com/drive/v3/web/quickstart/nodejs
+https://github.com/google/google-api-nodejs-client
+
+http://google.github.io/google-api-nodejs-client/2.1.7/apis_youtube_v3.js.html
+
+express installation: https://www.digitalocean.com/community/tutorials/how-to-install-express-a-node-js-framework-and-set-up-socket-io-on-a-vps
+
+try with web side,
+https://developers.google.com/api-client-library/javascript/start/start-js
+https://github.com/google/google-api-javascript-client/tree/master/samples
+for auth: https://github.com/google/google-api-javascript-client/blob/master/samples/authSample.html
+work on: https://developers.google.com/api-client-library/javascript/start/start-js
+
+youtube live libs:
+https://developers.google.com/youtube/v3/live/getting-started
+nodejs client: https://github.com/google/google-api-nodejs-client/
+	doesn't have live streaming api integraion
+googleapis
+	doesn't have live streaming api integraion
+need to write wrapper for requests
+
+use post on live streaming on api explorer
+https://developers.google.com/youtube/v3/live/docs/liveBroadcasts/insert
+
+quota calculator
+https://developers.google.com/youtube/v3/determine_quota_cost
+https://developers.google.com/admin-sdk/directory/v1/limits
+
+multiple broadcasts
+https://productforums.google.com/forum/#!topic/youtube/mRaGEGHmlcY;context-place=topicsearchin/youtube/simultaneous$20broadcasts
+https://productforums.google.com/forum/#!topic/youtube/5fWE1CvEmC0
+
+think about ml based profile
+
+module.exports
+
+how to debug hits by requests
+debug why token is not getting fetched by script,
+add auto refresh token api hit
+check how client is setting clientId, secret etc...
+stream+broadcast api for setting seminar
+
+
+{"access_token":"ya29.GlvdBEJ9zayP3nyy5g0FP_TUw70y5QPKIPUCEdkaEuA0gOYRaC9VxRRtauLzQ0JTdU6p7z3pZNLHw5kJ9RT43emolXtE47uodl7Coz1pDs4TAr8Nz6rD3-gjP_m5","refresh_token":"1/T9vC7IoD45RHWMsKYlCXNsAOee_llr1O4W9WSnSEGto","token_type":"Bearer","expiry_date":1507401615767}
+
+
+https://stackoverflow.com/questions/42117637/error-creating-live-broadcast-nodejs-libs

@@ -1,0 +1,75 @@
+webrtc is not good for one to many: try video conferencing on hangout
+
+official webrtc: https://www.w3.org/TR/webrtc/
+simple chat application: https://github.com/andyet/SimpleWebRTC
+why not to use: https://simplewebrtc.com/notsosimple.html
+
+video conferencing:
+https://github.com/muaz-khan/WebRTC-Experiment/tree/master/video-conferencing
+
+samples: https://webrtc.github.io/samples/
+
+problems with webrtc:
+https://www.youtube.com/watch?v=r-qIkkdGVLM
+https://www.youtube.com/watch?v=3TbVi9aB09k
+
+asterisk as contact center
+http://www.asterisk.org/
+
+webrtc arch in depth: https://hpbn.co/webrtc/
+
+standards: www.webrtcstandards.info
+ adapter.js, a JavaScript shim
+mediatrack w3c official documentation: https://www.w3.org/TR/mediacapture-streams/
+
+
+stun and turn servers
+https://hpbn.co/building-blocks-of-udp/#udp-and-network-address-translators
+
+webrtc video conferencing code: https://www.webrtc-experiment.com/video-conferencing/#29729405610421257
+
+what service providers provide
+stun, turn services; sdp communication;
+
+testing on multiple devicces is highly recommended
+
+questions
+heirarchy of javascript objects in browser
+should i create client side or server side web app google api calls
+limit on number of videos uploaded on youtube
+	no limit, some say 50: https://www.quora.com/How-many-video-uploads-are-allowed-per-YouTube-account-per-day-and-month
+	need to understand youtube revenue model algo first
+
+will react call our api at server side or we have to provide object to it
+	understand server side rendering concept
+can we merge different search pages
+
+
+todo
+poc : wether doable or not, underlying arch understanding
+	one 2 one discussion
+	one 2 many conference
+	can we create youtube live stream using api
+ui components should be reusable, just filling data should be enough
+identify components which should be SEO friendly, dont ajax on those
+keep on adding functionality, ui is most important but not be first thing
+swot analysis
+discuss revenue streams, may be we should structure for that
+http://redux.js.org/docs/recipes/ServerRendering.html
+
+flow
+requirements
+underlying requiremetns
+most basic reqments
+
+
+
+
+
+
+
+
+
+urls
+quality of video hd constraints, audio/video, screenshot using canvas is possible, css can be used to apply effects to video element, webgl textures,
+https://www.html5rocks.com/en/tutorials/getusermedia/intro/
