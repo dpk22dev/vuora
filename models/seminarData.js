@@ -39,6 +39,24 @@ var dummyData = {
         "part": "id, snippet,status,contentDetails",
     }
 }
+
+var dummyStreamFetchData = {
+    "userID" : "123456",
+    "stream" : {
+        "part": "status, id",
+        "id" : "E2PSHxrfCp2mLk733eOGYw1507575524482784"
+    }
+
+}
+
+var dummyTransitionData = {
+    "userID": "123456",
+    "broadcast": {
+        "part": "snippet,status,contentDetails",
+        "id" : "INaW2Pxng1o",
+        "broadcastStatus" : "testing",
+    }
+}
 /*
 {
     "title" :  "test seminar 1 title",
@@ -53,6 +71,8 @@ var dummyData = {
 
 
 exports.seminarDummyData = dummyData;
+exports.dummyStreamFetchData = dummyStreamFetchData;
+exports.dummyTransitionData = dummyTransitionData;
 
 exports.convertModel2UserData = function ( data ) {
 
