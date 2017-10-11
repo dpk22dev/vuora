@@ -79,5 +79,8 @@ app.use(function (err, req, res, next) {
     });
 });
 
+process.on('uncaughtException', function (err) {
+    console.log('error','UNCAUGHT EXCEPTION - keeping process alive:',  err);
+});
 
 module.exports = {app: app, server: server};

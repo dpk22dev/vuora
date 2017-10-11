@@ -10,7 +10,7 @@ var dummyData = {
         "part": "snippet,status,contentDetails",
         "resource": {
             "snippet": {
-                "title": "7pm event 21",
+                "title": "7pm event 21 1",
                 "description" : "broadcast is about...",
                 "scheduledStartTime": "2017-10-12T18:40:00.000Z",
                 "scheduledEndTime": "2017-10-12T21:00:00.000Z",
@@ -47,7 +47,7 @@ var dummyStreamFetchData = {
     "userID" : "123456",
     "stream" : {
         "part": "status, id",
-        "id" : "E2PSHxrfCp2mLk733eOGYw1507691058911578"
+        "id" : "E2PSHxrfCp2mLk733eOGYw1507734472010207"
     }
 
 }
@@ -56,7 +56,7 @@ var dummyTransitionData = {
     "userID": "123456",
     "broadcast": {
         "part": "snippet,status,contentDetails",
-        "id" : "b1TaQmg3Pss",
+        "id" : "JTNdWjpFHcY",
         "broadcastStatus" : "testing",
     }
 }
@@ -96,7 +96,7 @@ exports.insertSeminar = function ( data ) {
     
 }
 
-exports.updateBindings = function (data, callback) {
+exports.updateBindings = function ( data ) {
     var broadcastCol = config.get("mongodb.broadcastCol");
     var mongoDB = mongo.getInstance();
     var collection = mongoDB.collection( broadcastCol );
@@ -111,10 +111,30 @@ exports.updateSeminar = function () {
     
 }
 
-exports.deleteSeminar =function () {
-    
+exports.deleteSeminar =function ( data ) {
+    var broadcastCol = config.get("mongodb.broadcastCol");
+    var mongoDB = mongo.getInstance();
+    var collection = mongoDB.collection( broadcastCol );
+
+    var promise = collection.delete( { "broadcast.id" : data.id } );
+    return promise;
+
 }
 
-exports.getSeminar = function () {
-    
+exports.getSeminar = function ( data ) {
+    var broadcastCol = config.get("mongodb.broadcastCol");
+    var mongoDB = mongo.getInstance();
+    var collection = mongoDB.collection( broadcastCol );
+
+    var promise = collection.delete( { "broadcast.id" : data.id } );
+    return promise;
+}
+
+exports.findSeminars = function ( data ) {
+    var broadcastCol = config.get("mongodb.broadcastCol");
+    var mongoDB = mongo.getInstance();
+    var collection = mongoDB.collection( broadcastCol );
+
+    var promise = collection.find( data );
+    return promise;
 }
