@@ -4,6 +4,8 @@
  * Module dependencies.
  */
 
+process.env.NODE_CONFIG_DIR = '../config';
+
 var app = require('../app').app;
 var debug = require('debug')('utube_live_v2:server');
 var http = require('http');

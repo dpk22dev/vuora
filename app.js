@@ -8,8 +8,12 @@ var cookieParser = require('cookie-parser');
 var routes = require('./routes/index');
 var users = require('./routes/users');
 var chat = require('./routes/chat');
+var selfGoogleAuth = require('./routes/selfGoogleAuth');
+var seminar = require('./routes/seminar.js');
 
 var app = express();
+
+process.env.NODE_CONFIG_DIR = '../config';
 
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
@@ -39,6 +43,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', routes);
 app.use('/users', users);
 app.use('/chat', chat);
+app.use('/selfGoogleAuth', selfGoogleAuth);
+app.use('/seminar', seminar);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
