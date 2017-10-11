@@ -1,7 +1,7 @@
 var express = require('express');
 var userUtil = require('./../lib/userUtil');
 var router = express.Router();
-
+var async = require('async');
 var bodyParser = require('body-parser');
 
 var jsonParser = bodyParser.json({type: 'application/json'});
@@ -27,6 +27,16 @@ router.get('/:uid', function (req, res) {
     userUtil.getUser(userId, function (err, response) {
         res.send(response);
     })
+});
+
+router.get('/suggestions/tag', function (req, res) {
+    var tag = req.query.t;
+    var tags = [];
+    tags.push(tag);
+    tags.push(tag + ".*");
+    async.map(tags, userUtil.getTagSuggestion, function (err, response) {
+        res.send(response);
+    });
 });
 
 module.exports = router;
