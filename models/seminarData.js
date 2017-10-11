@@ -1,6 +1,9 @@
 const mongo = require('../lib/mongo');
 const config = require('config');
 
+// try to store and query in standard resource way described by google
+// resource representation is to hit api, otherwise everything is in open json format
+// be careful id and etag are outside resource when accesing them
 var dummyData = {
     "userID" : "123456",
     "broadcast" : {
@@ -9,8 +12,8 @@ var dummyData = {
             "snippet": {
                 "title": "7pm event 21",
                 "description" : "broadcast is about...",
-                "scheduledStartTime": "2017-10-10T18:40:00.000Z",
-                "scheduledEndTime": "2017-10-10T21:00:00.000Z",
+                "scheduledStartTime": "2017-10-12T18:40:00.000Z",
+                "scheduledEndTime": "2017-10-12T21:00:00.000Z",
             },
             "status": {
                 "privacyStatus": "private",
@@ -44,7 +47,7 @@ var dummyStreamFetchData = {
     "userID" : "123456",
     "stream" : {
         "part": "status, id",
-        "id" : "E2PSHxrfCp2mLk733eOGYw1507575524482784"
+        "id" : "E2PSHxrfCp2mLk733eOGYw1507691058911578"
     }
 
 }
@@ -53,7 +56,7 @@ var dummyTransitionData = {
     "userID": "123456",
     "broadcast": {
         "part": "snippet,status,contentDetails",
-        "id" : "INaW2Pxng1o",
+        "id" : "b1TaQmg3Pss",
         "broadcastStatus" : "testing",
     }
 }
@@ -92,6 +95,17 @@ exports.insertSeminar = function ( data ) {
     return promise;
     
 }
+
+exports.updateBindings = function (data, callback) {
+    var broadcastCol = config.get("mongodb.broadcastCol");
+    var mongoDB = mongo.getInstance();
+    var collection = mongoDB.collection( broadcastCol );
+
+    var promise = collection.updateOne( { "broadcast.id" : data.id }
+        , {$set: {"binding.status.lifeCycleStatus": data.status.lifeCycleStatus }} );
+    return promise;
+
+};
 
 exports.updateSeminar = function () {
     
