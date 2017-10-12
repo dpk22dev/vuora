@@ -88,12 +88,13 @@ exports.convertUser2ModelData = function ( data ) {
 
 exports.insertSeminar = function ( data ) {
     var broadcastCol = config.get("mongodb.broadcastCol");
-    var mongoDB = mongo.getInstance();
-    var collection = mongoDB.collection( broadcastCol );
+    mongo.getInstance( function( mongoDB ){
+        var collection = mongoDB.collection( broadcastCol );
 
-    var promise = collection.insertOne(data);
-    return promise;
-    
+        var promise = collection.insertOne(data);
+        return promise;
+    } );
+
 }
 
 exports.updateBindings = function ( data ) {
@@ -113,11 +114,12 @@ exports.updateSeminar = function () {
 
 exports.deleteSeminar =function ( data ) {
     var broadcastCol = config.get("mongodb.broadcastCol");
-    var mongoDB = mongo.getInstance();
-    var collection = mongoDB.collection( broadcastCol );
+    mongo.getInstance( function( mongoDB ){
+        var collection = mongoDB.collection( broadcastCol );
+        var promise = collection.deleteOne( { "broadcast.id" : data.id } );
+        return promise;
+    });
 
-    var promise = collection.delete( { "broadcast.id" : data.id } );
-    return promise;
 
 }
 

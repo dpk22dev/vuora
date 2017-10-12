@@ -67,6 +67,14 @@
         });
     });
 
+    function afterLoginAskForNoti() {
+        socket.emit('receiveNoti', room);
+    }
+
+    socket.on('serverPushNoti', function (data) {
+        $('#conversation').append('<b>' + data + '<br>');
+    });
+
 </script>
 <div style="float:left;width:300px;height:250px;overflow:scroll-y;padding:10px;">
     <div id="conversation"></div>

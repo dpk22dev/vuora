@@ -183,6 +183,12 @@ router.post( '/search', jsonParser, function ( req, res, next ) {
 
 
 
-// post /broadcasts
+// post /broadcasts, get mapping of broadcastid to videoids and update
+router.post( '/broadcasts', function ( req, res, next ) {
+    var data = {};
+    data.id = req.params.broadCastId;
 
+});
 // update /broadcasts for video ids
+
+
