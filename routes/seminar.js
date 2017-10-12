@@ -146,7 +146,7 @@ router.post( '/complete', jsonParser, function ( req, res, next ) {
 
 //@todo
 //delete broadcast
-request.delete( '/:broadCastId', function ( req, res, next ) {
+router.delete( '/:broadCastId', function ( req, res, next ) {
     var data = {};
     data.id = req.params.broadCastId;
     seminarModel.deleteSeminar( data ).then(function (ok) {
@@ -158,7 +158,7 @@ request.delete( '/:broadCastId', function ( req, res, next ) {
 });
 
 // /broadcast with broadcast id to get all info from db
-request.get( '/:broadCastId', function ( req, res, next ) {
+router.get( '/:broadCastId', function ( req, res, next ) {
     var data = {};
     data.id = req.params.broadCastId;
     seminarModel.getSeminar( data ).then(function (ok) {
@@ -170,7 +170,7 @@ request.get( '/:broadCastId', function ( req, res, next ) {
 });
 
 // /search to get data from db
-request.post( '/search', jsonParser, function ( req, res, next ) {
+router.post( '/search', jsonParser, function ( req, res, next ) {
     var data = {};
     data.id = req.params.broadCastId;
     seminarModel.findSeminars( data ).then(function (ok) {

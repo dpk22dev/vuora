@@ -9,7 +9,7 @@ var config = {
     },
     redis: {
         host: "localhost",
-        post: 6379
+        port: 6379
     },
     linkedin: {
         oauth1uri: "https://www.linkedin.com/uas/oauth2/accessToken?grant_type=authorization_code&redirect_uri={}&client_id={}&client_secret={}&code={}&state={}",

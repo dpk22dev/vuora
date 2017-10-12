@@ -11,9 +11,10 @@ var jsonParser = bodyParser.json({type: 'application/json'});
 
 router.post('/addevent', jsonParser, function (req, res) {
     var body = req.body;
-    calender.addEvent(body.from, body.to, body.type, body.description, body.requestor, body.requestee);
-    res.stausCode = 202;
-    res.send();
+    calender.addEvent(body.from, body.to, body.type, body.description, body.requestor, body.requestee, function (err, result) {
+        res.stausCode = 202;
+        res.send();
+    });
 });
 
 module.exports = router;
