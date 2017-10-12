@@ -50,3 +50,6 @@ jspm_packages
 
 .idea
 vuora.iml
+*.out
+faltu/
+faltu.*
