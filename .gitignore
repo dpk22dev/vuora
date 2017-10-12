@@ -49,6 +49,7 @@ jspm_packages
 .yarn-integrity
 
 .idea
+./.idea/*
 vuora.iml
 *.out
 faltu/
