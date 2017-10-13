@@ -30,7 +30,14 @@ var notiIo = require('socket.io')(server, {
     serveClient: false,
     transports: ['polling', 'websocket']
 });
-var notiSocket = require('./lib/notiSocket')(notiIo);
+var notiIoData = {};
+notiIo.set('authorization', function (handshakeData, cb) {
+    console.log('Auth: ', handshakeData._query.userId);
+
+    notiIoData.userId = handshakeData._query.userId;
+    cb(null, true);
+});
+var notiSocket = require('./lib/notiSocket')(notiIo, notiIoData);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

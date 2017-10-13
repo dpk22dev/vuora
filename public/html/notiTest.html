@@ -6,24 +6,22 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
     <script>
+        var userId= prompt("What's your userId?");
         var notiSocket = io.connect('http://localhost:3000',{
             path : '/notiNsp',
-            transports: ['websocket']
+            transports: ['websocket'],
+            query: "userId="+userId
         });
 
         // on connection to server, ask for user's name with an anonymous callback
         notiSocket.on('connect', function(){
             // call the server-side function 'adduser' and send one parameter (value of prompt)
-            var user = {};
-            user.username = prompt("What's your name?");
-            user.conf = "meeting1";
-            notiSocket.emit('helo', user);
+            notiSocket.emit('getNoti', userId);
         });
 
-        notiSocket.on('oleh', function(){
+        notiSocket.on('sentNoti', function(data){
             // call the server-side function 'adduser' and send one parameter (value of prompt)
-
-            console.log('got oleh from server');
+            console.log('noti form server'+data);
         });
 
     </script>
