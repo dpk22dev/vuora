@@ -128,7 +128,7 @@ exports.getSeminar = function ( data ) {
     var mongoDB = mongo.getInstance();
     var collection = mongoDB.collection( broadcastCol );
 
-    var promise = collection.delete( { "broadcast.id" : data.id } );
+    var promise = collection.findOne( { "broadcast.id" : data.id } );
     return promise;
 }
 
@@ -137,6 +137,6 @@ exports.findSeminars = function ( data ) {
     var mongoDB = mongo.getInstance();
     var collection = mongoDB.collection( broadcastCol );
 
-    var promise = collection.find( data );
+    var promise = collection.findOne( data );
     return promise;
 }

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+    <script>
+        var notiSocket = io.connect('http://localhost:3000',{
+            path : '/notiNsp',
+            transports: ['websocket']
+        });
+
+        // on connection to server, ask for user's name with an anonymous callback
+        notiSocket.on('connect', function(){
+            // call the server-side function 'adduser' and send one parameter (value of prompt)
+            var user = {};
+            user.username = prompt("What's your name?");
+            user.conf = "meeting1";
+            notiSocket.emit('helo', user);
+        });
+
+        notiSocket.on('oleh', function(){
+            // call the server-side function 'adduser' and send one parameter (value of prompt)
+
+            console.log('got oleh from server');
+        });
+
+    </script>
+        </head>
+<body>
+
+</body>
+</html>

@@ -25,6 +25,12 @@ var io = require('socket.io')(server);
 var chatSocket = require('./lib/chatSocket')(io);
 // socket io ends
 
+var notiIo = require('socket.io')(server, {
+    path: '/notiNsp',
+    serveClient: false,
+});
+var notiSocket = require('./lib/notiSocket')(notiIo);
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
