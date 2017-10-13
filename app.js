@@ -28,6 +28,7 @@ var chatSocket = require('./lib/chatSocket')(io);
 var notiIo = require('socket.io')(server, {
     path: '/notiNsp',
     serveClient: false,
+    transports: ['polling', 'websocket']
 });
 var notiSocket = require('./lib/notiSocket')(notiIo);
 
