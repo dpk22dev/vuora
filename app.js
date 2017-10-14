@@ -75,6 +75,7 @@ app.use(function (req, res, next) {
         res.cookie('user', token, {maxAge: 900000, httpOnly: true});
         res.status(401).send('autorization token is missing new token created!!!');
     }
+<<<<<<< Updated upstream
 });*/
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));

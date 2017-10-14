@@ -1,5 +1,5 @@
 var express = require('express');
-var userUtil = require('./../lib/userService');
+var userUtil = require('./../service/user/userService');
 var loginUtil = require('./../lib/login');
 var router = express.Router();
 var async = require('async');
@@ -8,15 +8,23 @@ var bodyParser = require('body-parser');
 var jsonParser = bodyParser.json({type: 'application/json'});
 
 /* GET users listing. */
-router.post('/:id/tags', jsonParser, function (req, res, next) {
+function setTag(tag, callback) {
+    userUtil.setTags(tag.user, tag.tag, tag.rate || 0, callback);
+};
+
+router.post('/tags', jsonParser, function (req, res, next) {
     var body = req.body;
-    var userId = req.params.id;
+    var userId = body.id;
     var tags = body.tags;
+    var tagArr = [];
     tags.forEach(function (tag) {
-        userUtil.setTags(userId, tag.tag, tag.rate || 0);
+        tag.user = userId;
+        tagArr.push(tag);
     });
-    res.stausCode = 202;
-    res.send();
+    async.map(tags, setTag, function (err, results) {
+        res.stausCode = 202;
+        res.send();
+    });
 });
 
 router.get('/getuser/:id', function (req, res, next) {
