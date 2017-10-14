@@ -19,10 +19,15 @@ var config = {
         clientsecret: "D1OhB9hOolFQrSed",
         state: "DCEeFWf45A53sdfKef424"
     },
-    logger:{
-        level:"debug",
-        file:"app.log"
-    }
+    logger: {
+        level: "debug",
+        file: "app.log"
+    },
+    es: {
+        host: "localhost",
+        port: 9200
+    },
+    jwtsecret:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE1MDc4ODUyOTl9'
 };
 
 module.exports = config;

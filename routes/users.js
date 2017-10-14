@@ -1,5 +1,5 @@
 var express = require('express');
-var userUtil = require('./../lib/userUtil');
+var userUtil = require('./../lib/userService');
 var loginUtil = require('./../lib/login');
 var router = express.Router();
 var async = require('async');

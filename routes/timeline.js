@@ -6,7 +6,7 @@ var express = require('express');
 var router = express.Router();
 var path = require('path');
 var bodyParser = require('body-parser');
-var calender = require('./../lib/seminar');
+var calender = require('./../lib/seminarService');
 var jsonParser = bodyParser.json({type: 'application/json'});
 
 router.post('/seminar/request', jsonParser, function (req, res) {

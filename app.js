@@ -4,6 +4,7 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 //var bodyParser = require('body-parser');
+var jsonwebtoken = require("jsonwebtoken");
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
@@ -11,6 +12,7 @@ var chat = require('./routes/chat');
 var selfGoogleAuth = require('./routes/selfGoogleAuth');
 var timeline = require('./routes/timeline');
 var seminar = require('./routes/seminar.js');
+var config = require('./config/config');
 
 var app = express();
 
@@ -33,6 +35,29 @@ app.use(function (req, res, next) {
     next();
 });
 
+app.use(function (req, res, next) {
+    next(); //will remove once dev is done
+
+    var user = req.headers.user;
+    if (req.headers && req.headers.authorization
+        && req.headers.authorization.split(' ')[0] === 'JWT') {
+        var token = req.headers.authorization.split(' ')[1];
+        var decoded = jsonwebtoken.verify(token, config.jwtsecret);
+        if (!decoded || decoded.auth != user) {
+            res.status(401).send('Unauthorized access detected');
+        } else {
+            next();
+        }
+    } else {
+        var token = jsonwebtoken.sign({
+            auth: user,
+            agent: req.headers['user-agent'],
+            exp: Math.floor(new Date().getTime() / 1000) + 7 * 24 * 60 * 60
+        }, config.jwtsecret);
+        res.cookie('user', token, {maxAge: 900000, httpOnly: true});
+        res.status(401).send('autorization token is missing new token created!!!');
+    }
+});
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
@@ -80,7 +105,7 @@ app.use(function (err, req, res, next) {
 });
 
 process.on('uncaughtException', function (err) {
-    console.log('error','UNCAUGHT EXCEPTION - keeping process alive:',  err);
+    console.log('error', 'UNCAUGHT EXCEPTION - keeping process alive:', err);
 });
 
 module.exports = {app: app, server: server};
