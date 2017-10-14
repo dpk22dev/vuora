@@ -22,11 +22,14 @@
         notiSocket.on('sentNoti', function(data){
             // call the server-side function 'adduser' and send one parameter (value of prompt)
             console.log('noti form server'+data);
+            var div = document.getElementById('root');
+            div.innerHTML += 'noti form server'+data;
         });
 
-    </script>
-        </head>
-<body>
 
+    </script>
+</head>
+<body>
+<div id="root"></div>
 </body>
 </html>
