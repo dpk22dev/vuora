@@ -18,3 +18,7 @@ exports.addUserSocket = function ( data, cb ) {
 exports.getUserSocket = function ( data, cb) {
     redisClient.get( data.userId, cb );
 };
+
+    exports.removeUserSocket = function ( data, cb) {
+    redisClient.expire( data.userId, data.expire, cb );
+};

@@ -37,7 +37,10 @@ notiIo.set('authorization', function (handshakeData, cb) {
     notiIoData.userId = handshakeData._query.userId;
     cb(null, true);
 });
-var notiSocket = require('./lib/notiSocket')(notiIo, notiIoData);
+var notiSocketObj = require('./lib/notiSocket');
+notiSocketObj.notiSocketCreator(notiIo, notiIoData);
+//var notiSocket = notiSocketObj.notiSocket;
+//app.set('notiSocket', notiSocket);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -45,7 +48,8 @@ app.set('view engine', 'jade');
 
 // try it
 app.use(function (req, res, next) {
-    res.io = io;
+    //res.io = io; //comment this after trry
+    req.notiIo = notiIo;
     next();
 });
 

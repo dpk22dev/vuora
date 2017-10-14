@@ -17,18 +17,12 @@ exports.dummyNotiData = {
         status:
     }
  */
-exports.getPendingNotifications = function ( data ) {
+exports.getPendingNotifications = function ( inpData ) {
     var notiCol = config.get("mongodb.notificationCol");
-    /*mongo.getInstance( function( mongoDB ){
-        var collection = mongoDB.collection( notiCol );
-
-        var promise = collection.find(data);
-        return promise;
-    } );*/
     var mongoDB = mongo.getInstance( );
     var collection = mongoDB.collection( notiCol );
-    var promise = collection.find(data);
-    return promise;     
+    var cursor = collection.find( { to: inpData.to } );
+    return cursor;
 }
 
 /*
@@ -42,25 +36,45 @@ exports.getPendingNotifications = function ( data ) {
 
 exports.insertNotifications = function ( data ) {
     var notiCol = config.get("mongodb.notificationCol");
-    mongo.getInstance( function( mongoDB ){
-        var collection = mongoDB.collection( notiCol );
+    var mongoDB = mongo.getInstance( );
+    var collection = mongoDB.collection( notiCol );
 
-        var promise = collection.insertMany(data);
-        return promise;
-    } );
+    var promise = collection.insertMany(data);
+    return promise;
 }
 
 /*
-    data.objectIds: []
+    data.objIds: []
     data.status
  */
 exports.setStatus = function ( data ) {
     var notiCol = config.get("mongodb.notificationCol");
-    mongo.getInstance( function( mongoDB ){
-        var collection = mongoDB.collection( notiCol );
+    var mongoDB = mongo.getInstance( );
+    var collection = mongoDB.collection( notiCol );
 
-        var promise = collection.update( { _id : { $in : data.objIds } }, { $set : { status:  data.status} } );
-        return promise;
-    } );
+    var promise = collection.updateMany( { _id : { $in : data.objIds } }, { $set : { status:  data.status} } );
+    return promise;
+
 }
 
+
+/*
+data:{
+    socket
+    socketId
+    dataToSend
+    dataToInsert
+}
+*/
+exports.sendNotificationToSocket = function ( data, cb ){
+    var socket = data.socket;
+    socket.to(data.socketId).emit( 'sentNoti', data.dataToSend );
+    //@todo put below code in callback
+    var notiCol = config.get("mongodb.notificationCol");
+    var mongoDB = mongo.getInstance( );
+    var collection = mongoDB.collection( notiCol );
+
+    var promise = collection.insert( data.dataToInsert );
+    return promise;
+
+}
