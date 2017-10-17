@@ -39,6 +39,9 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
 <script src="../../javascripts/simplewebrtc-with-adapter.bundle.js"></script>
 <script>
+
+    var userId= prompt("What's your userId?");
+
     //var userId = prompt("What's your userId?");
     // grab the room from the URL
     var getLastSegmentInPath = function ( ) {
@@ -47,17 +50,22 @@
         return lastSegment;
     }
 
+
     var room = getLastSegmentInPath();
     var f2fWebRtcSettings = {
-        //url: 'localhost:3000'
-        // the id/element dom element that will hold "our" video
+        url: 'localhost:3000',
+        socketio: {
+            path : '/f2fNsp',
+            transports: ['websocket'],
+            query: "userId="+userId
+        },
         localVideoEl: 'localVideo',
             // the id/element dom element that will hold remote videos
             remoteVideosEl: '',
             // immediately ask for camera access
             autoRequestMedia: true,
-            debug: false,
-            detectSpeakingEvents: true
+            debug: true,
+            detectSpeakingEvents: false
     };
     // create our webrtc connection
     var webrtc = new SimpleWebRTC( f2fWebRtcSettings );
