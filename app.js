@@ -9,6 +9,7 @@ var cookieParser = require('cookie-parser');
 var routes = require('./routes/index');
 var users = require('./routes/users');
 var chat = require('./routes/chat');
+var f2f = require('./routes/f2f');
 var selfGoogleAuth = require('./routes/selfGoogleAuth');
 var timeline = require('./routes/timeline');
 var seminar = require('./routes/seminar.js');
@@ -25,6 +26,22 @@ var io = require('socket.io')(server);
 var chatSocket = require('./lib/chatSocket')(io);
 // socket io ends
 
+var f2fIo = require('socket.io')(server, {
+    path: '/f2fNsp',
+    serveClient: false,
+    transports: ['polling', 'websocket']
+});
+var f2fIoData = {};
+f2fIo.set('authorization', function (handshakeData, cb) {
+    console.log('Auth: ', handshakeData._query.userId);
+
+    f2fIoData.userId = handshakeData._query.userId;
+    cb(null, true);
+});
+var f2fSocketObj = require('./lib/f2fSocket');
+f2fSocketObj.f2fSocketCreator(f2fIo, f2fIoData);
+
+//
 var notiIo = require('socket.io')(server, {
     path: '/notiNsp',
     serveClient: false,
@@ -90,6 +107,7 @@ app.use('/chat', chat);
 app.use('/selfGoogleAuth', selfGoogleAuth);
 app.use('/seminar', seminar);
 app.use('/timeline', timeline);
+app.use('/f2f', f2f);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

@@ -1,0 +1,113 @@
+goal: build platform which can aggregate questions answered, by someone under various tags and categories on various platforms including SO, Quora, yahoo answers. make audio/video searchable for others to clear doubts.
+
+why: face 2 face discussion are good( 2-3 people ). in office /college might not be surrounded with poeple having that much interest and expertise => doubts are not cleared and concepts are not evolved. sometimes doubt are stupid and we want a person who can answer our stupid questions( SO is not the place ). quora is good for written but for proper doubt clearing we need continous engagement. we should be able to search similar questions as done on quora.
+-> where do i search and hangout with people with similar interests/ similar age group / poeple willing to answer stupid quesionts: two way communication <-
+sometimes we need friendly discussion, sometimes intensive, sometimes just a push when we are starting something new and don't know how to start in best possible way.
+
+aim: to build above mentioned platform. dont want to create SPAM or SEXUAL network. so every video will be public, accounts will linked to professional network quora/linkedin. poeple can report spam/sexual content.
+
+*****
+users can be divided into expert, intermediate, novice.
+
+minimalistic product: user can register, post a question under various tags: based on tags and text-based-tag in question. suggest who he can hangout with.( other users are selected based on tagged interests and answers on quora/)
+experts can start seminar or session at preferred time, interested users will be given notifications, same can be propagated on social network. participants can write questions, upvoted questions will be picked and answered. can be boring for experts, but intermediate will be more happy to do it.
+novices can invite others and start discussion
+
+components: create profile based on permission from user: linkedin, quora,
+	    hangout timing calender implementation
+
+
+requirement:
+1) oauth using quora, get list of tags, questions answered by user.
+	quroa doesn't provide api, need to crawl https://www.quora.com/profile/Deepak-Bhoria-1/activity# to get insight
+2) oauth using linkedin, get list of tags
+	basic profile doesn't give skills, need full profile which is based on professional network
+3) oauth using SO, get list of tags, questions answered by user.
+	can use http://api.stackexchange.com/docs or js sdk
+4) oauth using youtube
+	my owned chaneels, to what channels do i subscribe, #subscribers to my channels
+	based on channels, playlist in that, videos and their likes/dislikes
+	there is category of videos, but tags need to taken from title, caption, description etc
+all above create profile of user
+5) player implementation.
+
+6) CDN of vides, audios, images
+	can't handle scale spikes, can allow max of say 30 hangoutees
+7) getting text out of audio/video
+
+quesiotns:
+is it necessary to be friends first before sending hangout request. THIS RESTRICTS
+problem: popular users will get lots of hangout requests => causing spam
+	give calender when is hangoutee available
+	limit number of people user can send hangout requests
+various protocols hls, rtms and formats that can be used in streaming
+can we embed hangouts
+	yes live google+ hangout session could be embedded but now its done by youtube live
+	is youtube live stream still for few users
+	choose: all live videos on our account vs distributed on individual users
+	as of now there are no adverts on YouTube live events.
+	premium feature: of embeddable live streams
+	don't have to worry about quality, load balancing etc
+		even copyright notices delivered to concerned people
+		good for people, they can earn on video they have created: CONSULT IT, we could ask for share
+		if user moves recorded video, how to avoid breakign of embedded code
+	need to force youtube login with posting hangout functionality
+	max 8 hrs, otherwise divide stream
+	live stream is not channel based, due to some issue need to recreate embed code
+	real time closed caption on live stream can be obtained by adding bradcast delay of 1 min, we might not need to show this to participants, but can be helpful in seo
+	dvr gives option to seek back 4hrs of live stream
+	=> try it yourself, read in depth about live streams. issues and resolutions by other people specially quota overflow
+can embedded live stream events be used for future references
+	they can be saved as video under channel which can be used later, it might not be real time
+can we use facebook live/skype live/ twitter periscope
+adv and dis-adv of above methosd
+can auto language and subtitles be got
+	is auto captioning helpful in seo
+	can captioning be obtained using api: yes but don't know about helpfulness in seo
+	we could beforehand ask for keywords, title, description from user. if those empty based on some criteria set them by code
+deskot sharing was possibe wiht hangout which has moved to youtube live and is possible
+
+
+*****
+
+minimalistic product: gain users,
+
+components: seo, posting on facebook, twitter, social etc
+
+requirement: make audio, video content searchable
+
+questions
+how to bring users from quora and other platforms to this one
+
+
+
+
+
+
+*****
+futuristic product: private hangout premium based can be useful for private conversation, consultation, co founders finding, etc...
+		increase engagement VR/AR, desktop sharing
+		tablet/mobile/camera/stylus based input device i.e. multi inputs transmition to end user
+		mobile on stand can be used as input
+		m2m conferencing
+
+
+components: various language support, voting algo, premium based
+
+
+
+
+
+
+
+
+
+*******************************************************************
+
+requriement
+app to convert voice into text
+
+
+quesitons
+streaming technologies
+

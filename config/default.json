@@ -7,6 +7,7 @@
   },
   "mongodb" : {
     "broadcastCol" : "broadcast",
-    "notificationCol" : "notification"
+    "notificationCol" : "notification",
+    "f2fCol": "f2f"
   }
 }
