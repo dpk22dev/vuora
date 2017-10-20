@@ -27,6 +27,12 @@
 </style>
 <button id="screenShareButton"></button>
 <p id="subTitle"></p>
+
+<button id="start-recording">Start</button>
+<button id="stop-recording" disabled>Stop</button>
+<button id="pause-recording" disabled>Pause</button>
+<button id="resume-recording" disabled>Resume</button>
+
 <form id="createRoom">
     <input id="sessionInput"/>
     <button type="submit">Create it!</button>
@@ -57,6 +63,8 @@
         return lastSegment;
     }
 
+    //caught creen and stream
+    var localStreamData = localScreenData = { enable: false };
 
     var room = getLastSegmentInPath();
     var f2fWebRtcSettings = {
@@ -166,38 +174,40 @@
             };
 
     webrtc.on('localStream', function ( stream ) {
-
-        console.log(' localStream before media recorder ');
+        console.log('local stream created');
         var localStreamMediaRecorder = new MediaStreamRecorder(stream);
+        localStreamData.stream = stream;
+        localStreamData.recorder = localStreamMediaRecorder;
 
         localStreamMediaRecorder.mimeType = 'video/webm';
-        localStreamMediaRecorder.ondataavailable = function (blob) {
-            // POST/PUT "Blob" using FormData/XHR2
-            var blobURL = URL.createObjectURL(blob);
-            var div = document.getElementById('localStreamList');
-            div.innerHTML += '<a href="' + blobURL + '">' + blobURL + '</a>';
-        };
         localStreamMediaRecorder.start(3000);
         localStreamMediaRecorder.ondataavailable = function(blob) {
+            if( localStreamData.enable != true )
+                    return;
             // upload each blob to PHP server
+            var blobURL = URL.createObjectURL(blob);
+            var div = document.getElementById('localStreamList');
+            div.innerHTML += '<a href="' + blobURL + '">' + blobURL + '</a><br/>';
             uploadToServer(blob);
         };
 
     });
 
     webrtc.on('localScreen', function ( stream ) {
-        console.log(' localScreen before media recorder ');
         var mediaRecorder = new MediaStreamRecorder(stream);
+
+        localScreenData.stream = stream;
+        localScreen.recorder = mediaRecorder;
+
         mediaRecorder.mimeType = 'video/webm';
-        mediaRecorder.ondataavailable = function (blob) {
-            // POST/PUT "Blob" using FormData/XHR2
-            var blobURL = URL.createObjectURL(blob);
-            var div = document.getElementById('localScreenList');
-            div.innerHTML += '<a href="' + blobURL + '">' + blobURL + '</a>';
-        };
         mediaRecorder.start(3000);
         mediaRecorder.ondataavailable = function(blob) {
+            if( localStreamData.enable != true )
+                return;
             // upload each blob to PHP server
+            var blobURL = URL.createObjectURL(blob);
+            var div = document.getElementById('localScreenList');
+            div.innerHTML += '<a href="' + blobURL + '">' + blobURL + '</a><br/>';
             uploadToServer(blob);
         };
 
@@ -257,6 +267,50 @@
         request.open('POST', url);
         request.send(data);
     }
+
+
+
+    document.querySelector('#start-recording').onclick = function() {
+        this.disabled = true;
+        localScreenData.enable = localStreamData.enable = true;
+        document.querySelector('#pause-recording').disabled = false;
+        document.querySelector('#stop-recording').disabled = false;
+    };
+
+    document.querySelector('#stop-recording').onclick = function() {
+        this.disabled = true;
+        localScreenData.enable = localStreamData.enable = false;
+
+
+        localScreenData.recorder.stop();
+        localScreenData.recorder.stream.stop();
+
+        localStreamData.recorder.stop();
+        localStreamData.recorder.stream.stop();
+
+        document.querySelector('#pause-recording').disabled = true;
+        document.querySelector('#start-recording').disabled = false;
+    };
+
+    document.querySelector('#pause-recording').onclick = function() {
+        this.disabled = true;
+        localScreenData.enable = localStreamData.enable = false;
+
+        localStreamData.recorder.pause();
+        localScreenData.recorder.pause();
+
+        document.querySelector('#resume-recording').disabled = false;
+    };
+
+    document.querySelector('#resume-recording').onclick = function() {
+        this.disabled = true;
+        localScreenData.enable = localStreamData.enable = true;
+
+        localStreamData.recorder.resume();
+        localScreenData.recorder.resume();
+
+        document.querySelector('#pause-recording').disabled = false;
+    };
 
 </script>
 </body>
