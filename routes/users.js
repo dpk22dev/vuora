@@ -68,17 +68,13 @@ router.post('/signin', jsonParser, function (req, res) {
 
 router.get('/forgotpassword', function (req, res) {
     var id = req.query.id;
-    loginUtil.forgotPassword(id, function (err, res) {
+    loginUtil.forgotPassword(id, function (err, result) {
         if (err) {
             res.send(err);
         } else {
-            res.send(res);
+            res.send(result);
         }
     })
-});
-
-router.get('/passwordreset/:token', function (req, res, next) {
-    var token = req.params.token;
 });
 
 router.post('/passwordreset', jsonParser, function (req, res) {
@@ -88,6 +84,29 @@ router.post('/passwordreset', jsonParser, function (req, res) {
             res.send('password reset successfully');
         } else {
             res.send(err);
+        }
+    })
+});
+
+router.put('/users', jsonParser, function (req, res) {
+    var user = req.body;
+    userUtil.updateUser(user, function (err, result) {
+        if (err) {
+            res.send(err)
+        } else {
+            res.send(result);
+        }
+    })
+});
+
+router.post('/activity', jsonParser, function (req, res) {
+    var data = req.body;
+    userUtil.saveUserActivity(data, function (err, result) {
+        if (err) {
+            res.statusCode = 500;
+            res.send(err);
+        } else {
+            res.send();
         }
     })
 });
