@@ -36,6 +36,10 @@
     <div id="localVolume" class="volume_bar"></div>
 </div>
 <div id="remotes"></div>
+<div id="localStreamList"></div>
+<div id="localScreeList"></div>
+<div id="remoteStreamList"></div>
+
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
 <script src="../../javascripts/simplewebrtc-with-adapter.bundle.js"></script>
 <script src="../../javascripts/MediaStreamRecorder.js"></script>
@@ -164,15 +168,21 @@
     webrtc.on('localStream', function ( stream ) {
 
         console.log(' localStream before media recorder ');
-        var mediaRecorder = new MediaStreamRecorder(stream);
+        var localStreamMediaRecorder = new MediaStreamRecorder(stream);
 
-        mediaRecorder.mimeType = 'video/webm';
-        mediaRecorder.ondataavailable = function (blob) {
+        localStreamMediaRecorder.mimeType = 'video/webm';
+        localStreamMediaRecorder.ondataavailable = function (blob) {
             // POST/PUT "Blob" using FormData/XHR2
             var blobURL = URL.createObjectURL(blob);
-            document.write('<a href="' + blobURL + '">' + blobURL + '</a>');
+            var div = document.getElementById('localStreamList');
+            div.innerHTML += '<a href="' + blobURL + '">' + blobURL + '</a>';
         };
-        mediaRecorder.start(3000);
+        localStreamMediaRecorder.start(3000);
+        localStreamMediaRecorder.ondataavailable = function(blob) {
+            // upload each blob to PHP server
+            uploadToServer(blob);
+        };
+
     });
 
     webrtc.on('localScreen', function ( stream ) {
@@ -182,9 +192,15 @@
         mediaRecorder.ondataavailable = function (blob) {
             // POST/PUT "Blob" using FormData/XHR2
             var blobURL = URL.createObjectURL(blob);
-            document.write('<a href="' + blobURL + '">' + blobURL + '</a>');
+            var div = document.getElementById('localScreenList');
+            div.innerHTML += '<a href="' + blobURL + '">' + blobURL + '</a>';
         };
         mediaRecorder.start(3000);
+        mediaRecorder.ondataavailable = function(blob) {
+            // upload each blob to PHP server
+            uploadToServer(blob);
+        };
+
     });
 
     webrtc.on('localScreenStopped', function () {
@@ -210,11 +226,6 @@
         }
     });
 
-    mediaRecorder.ondataavailable = function(blob) {
-        // upload each blob to PHP server
-        uploadToServer(blob);
-    };
-
     function uploadToServer(blob) {
         //@todo may be we can use differetn socket connection to upload to server
         // using ajax os of now
@@ -227,11 +238,12 @@
         formData.append('video-filename', file.name);
         formData.append('video-blob', file);
 
-        var blobSaveUrl = f2fWebRtcSettings.url + f2fWebRtcSettings.blobSavePath;
-        var blobGetPath = f2fWebRtcSettings.url + f2fWebRtcSettings.blobGetPath;
-        makeXMLHttpRequest( blobSaveUrl, formData, function() {
-            var downloadURL = blobGetPath + file.name;
-            console.log('File uploaded to this path:', downloadURL);
+        var blobSaveUrl = '//' + f2fWebRtcSettings.url + f2fWebRtcSettings.blobSavePath;
+        var blobGetPath = '//' + f2fWebRtcSettings.url + f2fWebRtcSettings.blobGetPath;
+        makeXMLHttpRequest( blobSaveUrl, formData, function( serverUrl ) {
+            var downloadURL = '//' + blobGetPath + '/' + file.name;
+            console.log('File uploaded to this path client guess:', downloadURL);
+            console.log('File uploaded to this path on server:', serverUrl );
         });
     }
 
@@ -239,7 +251,7 @@
         var request = new XMLHttpRequest();
         request.onreadystatechange = function() {
             if (request.readyState == 4 && request.status == 200) {
-                callback();
+                callback( request.responseText );
             }
         };
         request.open('POST', url);
