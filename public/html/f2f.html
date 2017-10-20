@@ -49,6 +49,8 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
 <script src="../../javascripts/simplewebrtc-with-adapter.bundle.js"></script>
 <script src="../../javascripts/MediaStreamRecorder.js"></script>
+<!--<script src="https://github.com/streamproc/MediaStreamRecorder/releases/download/1.3.4/MediaStreamRecorder.js"></script>-->
+
 <script>
 
     var userId = location.search && location.search.split('?userId=')[1];
@@ -175,7 +177,8 @@
 
     webrtc.on('localStream', function ( stream ) {
         console.log('local stream created');
-        var localStreamMediaRecorder = new MediaStreamRecorder(stream);
+        //var localStreamMediaRecorder = new MediaStreamRecorder(stream);
+        var localStreamMediaRecorder = new MultiStreamRecorder(stream);
         localStreamData.stream = stream;
         localStreamData.recorder = localStreamMediaRecorder;
 
@@ -185,7 +188,7 @@
             if( localStreamData.enable != true )
                     return;
             // upload each blob to PHP server
-            var blobURL = URL.createObjectURL(blob);
+            var blobURL = window.URL.createObjectURL(blob);
             var div = document.getElementById('localStreamList');
             div.innerHTML += '<a href="' + blobURL + '">' + blobURL + '</a><br/>';
             uploadToServer(blob);
@@ -193,11 +196,16 @@
 
     });
 
+    webrtc.on('peerStreamAdded', function ( rstream ) {
+        console.log('peer stream added');
+        localStreamData.recorder.addStream(  rstream.stream  );
+    });
+
     webrtc.on('localScreen', function ( stream ) {
         var mediaRecorder = new MediaStreamRecorder(stream);
 
         localScreenData.stream = stream;
-        localScreen.recorder = mediaRecorder;
+        localScreenData.recorder = mediaRecorder;
 
         mediaRecorder.mimeType = 'video/webm';
         mediaRecorder.start(3000);
@@ -283,7 +291,9 @@
 
 
         localScreenData.recorder.stop();
-        localScreenData.recorder.stream.stop();
+        if( localScreenData.recorder.stream ){
+            localScreenData.recorder.stream.stop();
+        }
 
         localStreamData.recorder.stop();
         localStreamData.recorder.stream.stop();

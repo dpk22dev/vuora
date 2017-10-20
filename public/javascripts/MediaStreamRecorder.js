@@ -1,1 +1,1 @@
-../../node_modules/msr/MediaStreamRecorder.js
+../../ext/msr/MediaStreamRecorder.js
