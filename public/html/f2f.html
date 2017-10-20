@@ -38,9 +38,12 @@
 <div id="remotes"></div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
 <script src="../../javascripts/simplewebrtc-with-adapter.bundle.js"></script>
+<script src="../../javascripts/MediaStreamRecorder.js"></script>
 <script>
 
-    var userId= prompt("What's your userId?");
+    var userId = location.search && location.search.split('?userId=')[1];
+    if( !userId ) userId =1;
+    //var userId= prompt("What's your userId?");
 
     //var userId = prompt("What's your userId?");
     // grab the room from the URL
@@ -65,7 +68,9 @@
             // immediately ask for camera access
             autoRequestMedia: true,
             debug: true,
-            detectSpeakingEvents: false
+            detectSpeakingEvents: false,
+        blobSavePath: '/f2f/saveBlob',
+        blobGetPath: '/videos'
     };
     // create our webrtc connection
     var webrtc = new SimpleWebRTC( f2fWebRtcSettings );
@@ -155,9 +160,37 @@
             setButton = function (bool) {
                 button.text(bool ? 'share screen' : 'stop sharing');
             };
+
+    webrtc.on('localStream', function ( stream ) {
+
+        console.log(' localStream before media recorder ');
+        var mediaRecorder = new MediaStreamRecorder(stream);
+
+        mediaRecorder.mimeType = 'video/webm';
+        mediaRecorder.ondataavailable = function (blob) {
+            // POST/PUT "Blob" using FormData/XHR2
+            var blobURL = URL.createObjectURL(blob);
+            document.write('<a href="' + blobURL + '">' + blobURL + '</a>');
+        };
+        mediaRecorder.start(3000);
+    });
+
+    webrtc.on('localScreen', function ( stream ) {
+        console.log(' localScreen before media recorder ');
+        var mediaRecorder = new MediaStreamRecorder(stream);
+        mediaRecorder.mimeType = 'video/webm';
+        mediaRecorder.ondataavailable = function (blob) {
+            // POST/PUT "Blob" using FormData/XHR2
+            var blobURL = URL.createObjectURL(blob);
+            document.write('<a href="' + blobURL + '">' + blobURL + '</a>');
+        };
+        mediaRecorder.start(3000);
+    });
+
     webrtc.on('localScreenStopped', function () {
         setButton(true);
     });
+
 
     setButton(true);
 
@@ -176,6 +209,43 @@
 
         }
     });
+
+    mediaRecorder.ondataavailable = function(blob) {
+        // upload each blob to PHP server
+        uploadToServer(blob);
+    };
+
+    function uploadToServer(blob) {
+        //@todo may be we can use differetn socket connection to upload to server
+        // using ajax os of now
+        var file = new File([blob], 'msr-' + (new Date).toISOString().replace(/:|\./g, '-') + '.webm', {
+            type: 'video/webm'
+        });
+
+        // create FormData
+        var formData = new FormData();
+        formData.append('video-filename', file.name);
+        formData.append('video-blob', file);
+
+        var blobSaveUrl = f2fWebRtcSettings.url + f2fWebRtcSettings.blobSavePath;
+        var blobGetPath = f2fWebRtcSettings.url + f2fWebRtcSettings.blobGetPath;
+        makeXMLHttpRequest( blobSaveUrl, formData, function() {
+            var downloadURL = blobGetPath + file.name;
+            console.log('File uploaded to this path:', downloadURL);
+        });
+    }
+
+    function makeXMLHttpRequest(url, data, callback) {
+        var request = new XMLHttpRequest();
+        request.onreadystatechange = function() {
+            if (request.readyState == 4 && request.status == 200) {
+                callback();
+            }
+        };
+        request.open('POST', url);
+        request.send(data);
+    }
+
 </script>
 </body>
 </html>
