@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 var youtubeApi = require('../lib/youtubeApi');
 const seminarModel = require('../models/seminarData');
-var timelineUtil = require('./../lib/seminarService');
+var timelineUtil = require('./../lib/timelineService');
 
 var bodyParser = require('body-parser');
 
@@ -202,3 +202,4 @@ router.post('/broadcasts', function (req, res, next) {
 // update /broadcasts for video ids
 
 
+module.exports = router;

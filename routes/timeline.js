@@ -6,12 +6,26 @@ var express = require('express');
 var router = express.Router();
 var path = require('path');
 var bodyParser = require('body-parser');
-var calender = require('./../lib/seminarService');
+var timelineUtil = require('./../lib/timelineService');
 var jsonParser = bodyParser.json({type: 'application/json'});
 
-router.post('/seminar/request', jsonParser, function (req, res) {
+router.get('/', function (req, res) {
+    var uid = req.query.uid;
+    var from = req.query.from;
+    var to = req.query.to;
+    timelineUtil.getEventsByRange(uid, from, to, function (err, results) {
+        if (err) {
+            res.send(err);
+        } else {
+            res.send(results);
+        }
+    })
+});
+
+router.post('/events/request', jsonParser, function (req, res) {
     var body = req.body;
-    calender.requestSeminar(body, function (err, result) {
+    var type = req.body.type;
+    timelineUtil.requestEvent(body, type, function (err, result) {
         if (err) {
             res.send(err);
         } else {
@@ -20,9 +34,20 @@ router.post('/seminar/request', jsonParser, function (req, res) {
     });
 });
 
-router.post('/seminar/accept', jsonParser, function (req, res) {
+router.post('/events/accept', jsonParser, function (req, res) {
     var body = req.body;
-    calender.acceptSeminar(body, function (err, result) {
+    timelineUtil.acceptEvent(body, function (err, result) {
+        if (err) {
+            res.send(err);
+        } else {
+            res.send(result)
+        }
+    });
+});
+
+router.post('/events/decline', jsonParser, function (req, res) {
+    var body = req.body;
+    timelineUtil.declineEvent(body, function (err, result) {
         if (err) {
             res.send(err);
         } else {
@@ -33,7 +58,8 @@ router.post('/seminar/accept', jsonParser, function (req, res) {
 
 router.post('/seminar/create', jsonParser, function (req, res) {
     var body = req.body;
-    calender.createSeminar(body, function (err, result) {
+    var type = req.query.type;
+    timelineUtil.createSeminar(body, function (err, result) {
         if (err) {
             res.send(err);
         } else {
@@ -42,13 +68,14 @@ router.post('/seminar/create', jsonParser, function (req, res) {
     });
 });
 
-router.delete('/seminar/:mid', function (req, res) {
+router.delete('/events/:mid', function (req, res) {
+    var type = req.query.type;
     var data = {
         user: req.query.user,
         tag: req.query.tag,
         mid: req.params.mid
     };
-    calender.deleteSeminar(data, function (err, result) {
+    timelineUtil.deleteEvent(data, type, function (err, result) {
         if (err) {
             res.send(err);
         } else {
@@ -57,9 +84,20 @@ router.delete('/seminar/:mid', function (req, res) {
     })
 });
 
-router.post('/seminar/search', jsonParser, function (req, res) {
+router.get('/events/:eid', function (req, res) {
+    var eventId = req.params.eid;
+    timelineUtil.getEvent(eventId, function (err, result) {
+        if (err) {
+            res.send(err);
+        } else {
+            res.send(result);
+        }
+    })
+});
+router.post('/events/search', jsonParser, function (req, res) {
     var body = req.body;
-    calender.searchSeminar(body, function (err, result) {
+    var type = req.query.type;
+    timelineUtil.searchEvent(body, function (err, result) {
         if (err) {
             res.send(err);
         } else {

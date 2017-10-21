@@ -45,6 +45,23 @@ will react call our api at server side or we have to provide object to it
 can we merge different search pages
 
 
+https://www.youtube.com/channel_switcher
+
+limits:
+no limit on number of youtube videos uploaded
+limit on number of channels: 50 <- use as category
+limit on number of playlists:
+	1000 <- people
+	https://developers.google.com/youtube/v3/docs/playlists no limit
+	create playlist as tags and put video under multile playlists, but tags can be thousands
+limit on number of videos under a playlists
+	3600 videos tried,
+	5000 <- people
+you can only sync up to 3,333 songs per device on up to three devices.
+
+
+
+
 todo
 poc : wether doable or not, underlying arch understanding
 	one 2 one discussion

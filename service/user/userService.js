@@ -1,8 +1,11 @@
 /**
  * Created by vinay.sahu on 10/7/17.
  */
-var mongo = require('./mongo');
-var elastic = require('./elasticSearchUtil');
+var mongo = require('./../../lib/mongo');
+var elastic = require('./../../lib/elasticSearchUtil');
+var ES_INDEX = 'vuora';
+var ES_USER_TYPE = 'users';
+var ES_ACTIVITY_TYPE = 'activity';
 var USER_COLLECTION = "user";
 var USER_TAG_COLLECTION = "usertag";
 var USER_CRED = "usercred";
@@ -39,9 +42,33 @@ function College(title, degree, tags, grade, from, to) {
 }
 
 function UserTag(id, tag, rating) {
-    this.id = id;
+    this._id = id;
     this.tag = tag;
     this.rating = rating;
+}
+
+function updateToElastic(index, type, id, callback) {
+    var mongoDB = mongo.getInstance();
+    var collection = mongoDB.collection(USER_TAG_COLLECTION);
+    var tags = [];
+    collection.find({_id: id}).toArray(function (err, results) {
+        results.forEach(function (result) {
+            var tag = result.tag;
+            if (tags.indexOf(tag) < 0) {
+                tags.push(tag);
+            }
+        });
+        userUtil.getUser(id, function (err, result) {
+            if (result) {
+                result.tags = tags;
+                elastic.update(index, type, id, result, function (err, res) {
+                    callback(err, res);
+                });
+            } else {
+                callback(err, result);
+            }
+        })
+    });
 }
 var userUtil = {};
 
@@ -50,7 +77,7 @@ userUtil.createUser = function (id, name, image, organisations, colleges, callba
     var mongoDB = mongo.getInstance();
     var collection = mongoDB.collection(USER_COLLECTION);
     collection.insertOne(user, function (err, res) {
-        callback(err, res);
+        updateToElastic(ES_INDEX, ES_USER_TYPE, id, callback);
     });
 };
 
@@ -59,8 +86,8 @@ userUtil.setTags = function (id, tag, rating, callback) {
     var userTag = new UserTag(id, tag, rating);
     var mongoDB = mongo.getInstance();
     var collection = mongoDB.collection(USER_TAG_COLLECTION);
-    collection.insertOne(userTag, function(err, res){
-        callback(err, res);
+    collection.insertOne(userTag, function (err, res) {
+        updateToElastic(ES_INDEX, ES_USER_TYPE, id, callback);
     });
 };
 
@@ -74,7 +101,7 @@ userUtil.addCollege = function (id, title, degree, tags, grade, from, to, callba
             colleges.push(college);
             collection.updateOne({_id: id}
                 , {$set: {colleges: colleges}}, function (err, result) {
-                    callback(err, result);
+                    updateToElastic(ES_INDEX, ES_USER_TYPE, id, callback);
                 });
         }
     });
@@ -90,7 +117,7 @@ userUtil.addOrganisation = function (id, title, company, location, from, to, cur
             orgs.push(org);
             collection.updateOne({_id: id}
                 , {$set: {organisations: orgs}}, function (err, result) {
-                    callback(err, result);
+                    updateToElastic(ES_INDEX, ES_USER_TYPE, id, callback);
                 });
         }
     });
@@ -106,7 +133,7 @@ userUtil.updateUser = function (user, callback) {
                 image: user.image
             }
         }, function (err, result) {
-            callback(err, result);
+            updateToElastic(ES_INDEX, ES_USER_TYPE, user._id, callback);
         });
 };
 
@@ -122,7 +149,7 @@ userUtil.saveCred = function (id, pwd, callback) {
     var userCred = new UserCredentials(id, pwd);
     var mongoDB = mongo.getInstance();
     var collection = mongoDB.collection(USER_CRED);
-    collection.insertOne(userCred, function(err, res){
+    collection.insertOne(userCred, function (err, res) {
         callback(err, res);
     });
 };
@@ -134,6 +161,11 @@ userUtil.getCred = function (id, callback) {
         callback(err, res);
     })
 };
+
+userUtil.saveUserActivity = function (data, callback) {
+    elastic.index(ES_INDEX, ES_ACTIVITY_TYPE, data, callback);
+};
+
 userUtil.getTagSuggestion = function (tag, callback) {
     var query =
         {
@@ -146,7 +178,7 @@ userUtil.getTagSuggestion = function (tag, callback) {
                 }
             }
         };
-    elastic.search("vuora", "tags", query, function (err, res) {
+    elastic.search(ES_INDEX, ES_USER_TYPE, query, function (err, res) {
         var suggestions = [];
         if (res) {
             if (res) {

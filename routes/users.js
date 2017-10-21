@@ -1,5 +1,5 @@
 var express = require('express');
-var userUtil = require('./../lib/userService');
+var userUtil = require('./../service/user/userService');
 var loginUtil = require('./../lib/login');
 var router = express.Router();
 var async = require('async');
@@ -8,15 +8,23 @@ var bodyParser = require('body-parser');
 var jsonParser = bodyParser.json({type: 'application/json'});
 
 /* GET users listing. */
-router.post('/:id/tags', jsonParser, function (req, res, next) {
+function setTag(tag, callback) {
+    userUtil.setTags(tag.user, tag.tag, tag.rate || 0, callback);
+};
+
+router.post('/tags', jsonParser, function (req, res, next) {
     var body = req.body;
-    var userId = req.params.id;
+    var userId = body.id;
     var tags = body.tags;
+    var tagArr = [];
     tags.forEach(function (tag) {
-        userUtil.setTags(userId, tag.tag, tag.rate || 0);
+        tag.user = userId;
+        tagArr.push(tag);
     });
-    res.stausCode = 202;
-    res.send();
+    async.map(tags, setTag, function (err, results) {
+        res.stausCode = 202;
+        res.send();
+    });
 });
 
 router.get('/getuser/:id', function (req, res, next) {
@@ -60,17 +68,13 @@ router.post('/signin', jsonParser, function (req, res) {
 
 router.get('/forgotpassword', function (req, res) {
     var id = req.query.id;
-    loginUtil.forgotPassword(id, function (err, res) {
+    loginUtil.forgotPassword(id, function (err, result) {
         if (err) {
             res.send(err);
         } else {
-            res.send(res);
+            res.send(result);
         }
     })
-});
-
-router.get('/passwordreset/:token', function (req, res, next) {
-    var token = req.params.token;
 });
 
 router.post('/passwordreset', jsonParser, function (req, res) {
@@ -80,6 +84,29 @@ router.post('/passwordreset', jsonParser, function (req, res) {
             res.send('password reset successfully');
         } else {
             res.send(err);
+        }
+    })
+});
+
+router.put('/users', jsonParser, function (req, res) {
+    var user = req.body;
+    userUtil.updateUser(user, function (err, result) {
+        if (err) {
+            res.send(err)
+        } else {
+            res.send(result);
+        }
+    })
+});
+
+router.post('/activity', jsonParser, function (req, res) {
+    var data = req.body;
+    userUtil.saveUserActivity(data, function (err, result) {
+        if (err) {
+            res.statusCode = 500;
+            res.send(err);
+        } else {
+            res.send();
         }
     })
 });
