@@ -202,3 +202,4 @@ router.post('/broadcasts', function (req, res, next) {
 // update /broadcasts for video ids
 
 
+module.exports = router;

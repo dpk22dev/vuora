@@ -11,7 +11,8 @@ var users = require('./routes/users');
 var chat = require('./routes/chat');
 var selfGoogleAuth = require('./routes/selfGoogleAuth');
 var timeline = require('./routes/timeline');
-var seminar = require('./routes/seminar.js');
+var seminar = require('./routes/seminar');
+var video = require('./routes/video');
 var config = require('./config/config');
 
 var app = express();
@@ -91,6 +92,7 @@ app.use('/chat', chat);
 app.use('/selfGoogleAuth', selfGoogleAuth);
 app.use('/seminar', seminar);
 app.use('/timeline', timeline);
+app.use('/video', video);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
