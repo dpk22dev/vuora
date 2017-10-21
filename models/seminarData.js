@@ -1,5 +1,6 @@
 const mongo = require('../lib/mongo');
 const config = require('config');
+var utils = require('../lib/util');
 
 // try to store and query in standard resource way described by google
 // resource representation is to hit api, otherwise everything is in open json format
@@ -40,7 +41,17 @@ var dummyData = {
     },
     "binding" : {
         "part": "id, snippet,status,contentDetails",
-    }
+    },
+    "mid" : "",
+    "videoId" : "",
+    "url" : ""
+}
+
+var dummyF2fData = {
+    "userId"  : "",
+    "mid" : "meetingid",
+    "videoId" : "videoId",
+    "url" : ""
 }
 
 var dummyStreamFetchData = {
@@ -76,6 +87,7 @@ var dummyTransitionData = {
 exports.seminarDummyData = dummyData;
 exports.dummyStreamFetchData = dummyStreamFetchData;
 exports.dummyTransitionData = dummyTransitionData;
+exports.dummyF2fData = dummyF2fData
 
 exports.convertModel2UserData = function ( data ) {
 
@@ -138,5 +150,43 @@ exports.findSeminars = function ( data ) {
     var collection = mongoDB.collection( broadcastCol );
 
     var promise = collection.findOne( data );
+    return promise;
+}
+
+function F2fData( data ) {
+
+    var obj = {
+      userId: data.userId,
+      mid: data.userId,
+      videoId: data.videoId
+    };
+
+    if( !obj.videoId ){
+        obj.videoId = utils.getId();
+    }
+    return obj;
+}
+
+exports.createF2f = function ( data ) {
+    var broadcastCol = config.get("mongodb.broadcastCol");
+    var mongoDB = mongo.getInstance();
+    var collection = mongoDB.collection( broadcastCol );
+
+    var f2fData = new F2fData( data );
+    var promise = collection.insertOne( f2fData );
+    return promise;
+
+}
+
+exports.getUsersInEvent = function ( data ) {
+    return { requestor : 1, requestee : 2 };
+}
+
+exports.getBroadcastIdForMid = function ( data ) {
+    var broadcastCol = config.get("mongodb.broadcastCol");
+    var mongoDB = mongo.getInstance();
+    var collection = mongoDB.collection( broadcastCol );
+
+    var promise = collection.findOne( { mid: data.mid }, { broadcastId : 1} );
     return promise;
 }

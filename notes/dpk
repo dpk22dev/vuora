@@ -79,7 +79,7 @@ requirements
 underlying requiremetns
 most basic reqments
 
-
+ --expose_debug_as=v8debug
 
 
 

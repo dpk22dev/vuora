@@ -201,5 +201,16 @@ router.post('/broadcasts', function (req, res, next) {
 });
 // update /broadcasts for video ids
 
+// get broadcast id for given mid
+router.get('/broadcastId/:mid', function (req, res, next) {
+    var data = {};
+    data.mid = req.params.mid;
+    seminarModel.getBroadcastIdForMid(data).then(function (ok) {
+        //console.log('deleted broadcast');
+        res.json(ok.broadcastId);
+    }, function (err) {
+        res.json({"error": err});
+    });
+});
 
 module.exports = router;
