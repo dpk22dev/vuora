@@ -8,7 +8,7 @@
   "mongodb" : {
     "broadcastCol" : "broadcast",
     "notificationCol" : "notification",
-    "vidSocialStatusCol" : "videoSocialStatus"
+    "vidSocialStatusCol" : "videoSocialStatus",
     "f2fCol": "f2f"
   },
   "signalMaster" : {
