@@ -21,11 +21,26 @@ var app = express();
 process.env.NODE_CONFIG_DIR = '../config';
 
 var server = require('http').Server(app);
-var io = require('socket.io')(server);
+//var io = require('socket.io')(server);
 
-// socket io start
-var chatSocket = require('./lib/chatSocket')(io);
-// socket io ends
+//chat socket start
+var chatIo = require('socket.io')(server, {
+    path: '/chatNsp',
+    serveClient: false,
+    transports: ['polling', 'websocket']
+});
+var chatIoData = {};
+chatIo.set('authorization', function (handshakeData, cb) {
+    console.log('Auth: ', handshakeData._query.userId);
+
+    chatIoData.userId = handshakeData._query.userId;
+    cb(null, true);
+});
+var chatSocketObj = require('./lib/chatSocket');
+chatSocketObj.chatSocketCreator(chatIo, chatIoData);
+
+//var chatSocket = require('./lib/chatSocket')(io);
+// chat socket ends
 
 var f2fIo = require('socket.io')(server, {
     path: '/f2fNsp',
