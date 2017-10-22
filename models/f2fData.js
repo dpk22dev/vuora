@@ -19,8 +19,3 @@ exports.getF2fId = function ( data ) {
     var promise = collection.find( { eventId : data.eventId } );
     return promise;
 }
-
-//@todo move it to events model
-exports.getUsersInEvent = function ( data ) {
-    return { requestor : 1, requestee : 2 };
-}

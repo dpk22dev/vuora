@@ -48,7 +48,7 @@ exports.updateVideoSocialStatus = function ( inpData ) {
     return promise;
 }
 
-exports.getUpvotesForUserId = function ( inpData, cb ) {
+exports.getUpvotesForVideoId = function ( inpData, cb ) {
     var vidCol = config.get("mongodb.vidSocialStatusCol");
     var mongoDB = mongo.getInstance( );
     var collection = mongoDB.collection( vidCol );

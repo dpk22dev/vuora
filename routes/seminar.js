@@ -8,12 +8,30 @@ var bodyParser = require('body-parser');
 
 var jsonParser = bodyParser.json({type: 'application/json'});
 
+const customLogger = require('../config/logger');
+
+function isSeminarValidForInsertion( semData ) {
+    var obj = {};
+    if( !seminarModel.checkIfSeminarDatesAreInRange( semData ) ){
+        obj.status = false;
+        obj.msg = "dates are not valid";
+    } else {
+        obj.status = true;
+        obj.msg ="ok";
+    }
+    return obj;
+}
+
 /* GET users listing. */
 router.post('/create', jsonParser, function (req, res, next) {
 
     //var seminarData = req.body;
     var seminarData = seminarModel.seminarDummyData;
-
+    var test = isSeminarValidForInsertion( seminarData );
+    if( test.status == false ){
+        res.json(test);
+        res.end();
+    }
     //seminarModel.insertSeminar( seminarData );
 
     youtubeApi.createBroadcast(seminarData, function (err, data) {
@@ -46,6 +64,7 @@ router.post('/stream/status', jsonParser, function (req, res, next) {
             console.log('error in getting stream status');
             res.json(err);
         }
+        res.json( data );
     });
 
 });
@@ -140,7 +159,6 @@ router.post('/complete', jsonParser, function (req, res, next) {
             res.json(data);
         });
 
-
     });
 });
 
@@ -171,9 +189,10 @@ router.get('/:broadCastId', function (req, res, next) {
 });
 
 // /search to get data from db
+// send broadcastId
 router.post('/search', jsonParser, function (req, res, next) {
     var data = {};
-    data.id = req.params.broadCastId;
+    data.id = req.params.broadcastId;
     seminarModel.findSeminars(data).then(function (ok) {
         //console.log('deleted broadcast');
         res.json(ok);
@@ -182,6 +201,8 @@ router.post('/search', jsonParser, function (req, res, next) {
     });
 });
 
+// @todo will pass videoId instead of broadcastId, need to change same in
+// events or timeline service
 router.post('/broadcast/question', jsonParser, function (req, res, next) {
     var data = req.body;
     timelineUtil.insertSeminarQuestion(data, function (err, result) {
@@ -194,12 +215,15 @@ router.post('/broadcast/question', jsonParser, function (req, res, next) {
 });
 
 // post /broadcasts, get mapping of broadcastid to videoids and update
+// not required as youtube uses same videoId as broadcastId
 router.post('/broadcasts', function (req, res, next) {
     var data = {};
-    data.id = req.params.broadCastId;
+    data.id = req.params.broadcastId;
 
 });
 // update /broadcasts for video ids
+
+
 
 // get broadcast id for given mid
 router.get('/broadcastId/:mid', function (req, res, next) {

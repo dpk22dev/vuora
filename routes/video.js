@@ -7,6 +7,9 @@ var customLogger = require('./../config/logger');
 var bodyParser = require('body-parser');
 var jsonParser = bodyParser.json({type: 'application/json'});
 
+const seminarModel = require('../models/seminarData');
+const mustache = require('mustache');
+
 router.post('/setSocialStatus', jsonParser, function (req, res, next) {
     var vidSocialData = req.body;
     videoModel.updateVideoSocialStatus( vidSocialData ).then(
@@ -21,7 +24,7 @@ router.post('/setSocialStatus', jsonParser, function (req, res, next) {
 
 router.post('/votes', jsonParser, function (req, res, next) {
     var vidData = req.body;
-    videoModel.getUpvotesForUserId( vidData, function( err, result ){
+    videoModel.getUpvotesForVideoId( vidData, function( err, result ){
         if( err ){
             customLogger.log( 'error while fetching' + err );
             res.send('error while fetching');
@@ -34,5 +37,17 @@ router.post('/votes', jsonParser, function (req, res, next) {
         res.send( votes );
     } );
 } );
+
+router.get( '/show/:videoId', function (req, res, next) {
+    //get url for that videoid, embed that in page and show thaat to user with other suggestions
+    var inpData = {};
+    inpData.videoId = req.params.videoId;
+    seminarModel.getDataForVideoId( inpData ).then( function ( resolve ) {
+        /*var html = mustache.render( "videoShow.mustache", resolve );
+        res.send( html );*/
+    }, function ( reject ) {
+        res.send("error occured in videoshow");
+    });
+});
 
 module.exports = router;
