@@ -248,13 +248,20 @@
     function uploadToServer(blob) {
         //@todo may be we can use differetn socket connection to upload to server
         // using ajax os of now
-        var file = new File([blob], 'msr-' + (new Date).toISOString().replace(/:|\./g, '-') + '.webm', {
+        /*
+        var file = new File([blob], "videoId:"+room+ ";userId:" + userId + ";date:" + (new Date).toISOString().replace(/:|\./g, '-') +';.webm', {
             type: 'video/webm'
         });
+        */
 
+        var file = new File([blob], room+ ";" + userId + ";" + (new Date).toISOString().replace(/:|\./g, '-') +';.webm', {
+            type: 'video/webm'
+        });
         // create FormData
         var formData = new FormData();
         formData.append('video-filename', file.name);
+        formData.append('userId', userId);
+        formData.append('room', room );
         formData.append('video-blob', file);
 
         var blobSaveUrl = '//' + f2fWebRtcSettings.url + f2fWebRtcSettings.blobSavePath;

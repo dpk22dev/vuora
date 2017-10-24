@@ -13,16 +13,22 @@ const seminarModel = require('../models/seminarData');
 const timeLineSrv = require('../lib/timelineService');
 
 var multer  = require('multer')
+const customConfig = require('config');
+const uploadPath = customConfig.get('f2f.uploadsPath')
 
-var storage = multer.diskStorage({
-    destination: function(req, file, callback) {
-        callback(null, '../public/videos/')
-    },
-    filename: function(req, file, callback) {
-        //@todo change filename while storing, possible cause of attack
-        callback(null, file.originalname)
-    }
-})
+try {
+    var storage = multer.diskStorage({
+        destination: function (req, file, callback) {
+            callback(null, uploadPath )
+        },
+        filename: function (req, file, callback) {
+            //@todo change filename while storing, possible cause of attack
+            callback(null, file.originalname)
+        }
+    })
+} catch( e ){
+    console.log("Error :\n"+e);
+}
 
 var upload = multer({
     storage: storage
@@ -45,7 +51,10 @@ router.get('/:videoId', function(req, res, next) {
     var inpData = {};
     inpData.videoId = videoId;
     seminarModel.getMidForVideoId( inpData ).then( function ( ok ) {
-        timeLineSrv.getUsersForMid( function ( err, users ) {
+        timeLineSrv.getUsersForMid( ok.mid, function ( err, users ) {
+            if( err ){
+                res.send('Error while fetching user for mid');
+            }
             if(  users.requestor == userId || users.requestee == userId ){
                 res.sendFile('f2f.html', {root: path.join(__dirname, '../public/html')});
             } else {
@@ -65,7 +74,7 @@ router.post( '/saveBlob', upload, function ( req, res, next ) {
     //@todo change filename while storing, possible cause of attack
     var fileName = req.body['video-filename'];
     var blob = req.files['video-blob'][0].filename;
-    var filePath = '/videos' + '/' + fileName;
+    var filePath = '/videos' + '/' + fileNasemime;
     var fileUrl = url.format({ protocol: req.protocol, host: req.get('host'), pathname: filePath });
     res.send( fileUrl );
 });
