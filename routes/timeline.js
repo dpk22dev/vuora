@@ -68,21 +68,21 @@ router.post('/seminar/create', jsonParser, function (req, res) {
     });
 });
 
-router.delete('/events/:mid', function (req, res) {
-    var type = req.query.type;
-    var data = {
-        user: req.query.user,
-        tag: req.query.tag,
-        mid: req.params.mid
-    };
-    timelineUtil.deleteEvent(data, type, function (err, result) {
-        if (err) {
-            res.send(err);
-        } else {
-            res.send(result)
-        }
-    })
-});
+/*router.delete('/events/:mid', function (req, res) {
+ var type = req.query.type;
+ var data = {
+ user: req.query.user,
+ tag: req.query.tag,
+ mid: req.params.mid
+ };
+ timelineUtil.deleteEvent(data, type, function (err, result) {
+ if (err) {
+ res.send(err);
+ } else {
+ res.send(result)
+ }
+ })
+ });*/
 
 router.get('/events/:eid', function (req, res) {
     var eventId = req.params.eid;
