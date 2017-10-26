@@ -48,14 +48,15 @@ jspm_packages
 # Yarn Integrity file
 .yarn-integrity
 
-
 .idea
+<<<<<<< HEAD
 ./.idea/*
 vuora.iml
 *.out
 faltu/
 faltu.*
 public/videos
+=======
 package-lock.json
 *.iml
-*.orig
+>>>>>>> release
