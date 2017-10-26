@@ -48,6 +48,7 @@ jspm_packages
 # Yarn Integrity file
 .yarn-integrity
 
+
 .idea
 ./.idea/*
 vuora.iml
@@ -55,3 +56,5 @@ vuora.iml
 faltu/
 faltu.*
 public/videos
+package-lock.json
+*.iml
