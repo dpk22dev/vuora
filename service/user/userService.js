@@ -2,7 +2,7 @@
  * Created by vinay.sahu on 10/7/17.
  */
 var mongo = require('./../../lib/mongo');
-var elastic = require('./../../lib/elasticSearchUtil');
+var elastic = require('./../../lib/elasticSearchWrapper');
 var ES_INDEX = 'vuora';
 var ES_USER_TYPE = 'users';
 var ES_ACTIVITY_TYPE = 'activity';
