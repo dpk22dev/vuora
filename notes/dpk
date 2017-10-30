@@ -96,3 +96,6 @@ youtube iframe:
 urls
 quality of video hd constraints, audio/video, screenshot using canvas is possible, css can be used to apply effects to video element, webgl textures,
 https://www.html5rocks.com/en/tutorials/getusermedia/intro/
+
+mongodb api ref
+http://mongodb.github.io/node-mongodb-native/2.2/api/

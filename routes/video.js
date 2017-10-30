@@ -9,6 +9,7 @@ var jsonParser = bodyParser.json({type: 'application/json'});
 
 const seminarModel = require('../models/seminarData');
 const mustache = require('mustache');
+var youtubeApi = require('../lib/youtubeApi');
 
 router.post('/setSocialStatus', jsonParser, function (req, res, next) {
     var vidSocialData = req.body;
@@ -50,4 +51,63 @@ router.get( '/show/:videoId', function (req, res, next) {
     });
 });
 
+var getTagsForRecommendations = function ( data ) {
+    //@todo add logic
+    return data.recentlySearched;
+}
+
+router.post('/suggest/recommendation', jsonParser, function (req, res, next) {
+    var recData = seminarModel.dummyRecommendationPageBackFillApiData;
+    //var recData = req.body;
+    
+    // get tags to search from
+    var tags = getTagsForRecommendations( recData );
+    
+    // get vids for tags
+    seminarModel.fetchVidsForTags( tags ).then( function ( ok ) {
+        // get tags for which video is not returned, correct below
+        var emptyTags = tags;
+
+        youtubeApi.fetchVidsFromYoutubeForTags( emptyTags, function ( err, data ) {
+            if( !err ){
+                // wrong happened, nothing to do
+            }
+
+            var semVidArr = [];
+            emptyTags.forEach( function ( ele ) {
+                var tagDataObj = data[ele];
+                var tagVidArr = tagDataObj.vidsArr;
+                if( tagVidArr.length > 0 ) {
+                    var arr = seminarModel.createDataForMultipleVids(tagVidArr, ele);
+                    semVidArr = semVidArr.concat(arr);
+                }
+            })
+
+            //insert videodata to seminarmodel for these tags,
+            // might need to change structure accordingly
+            seminarModel.insertMultipleVids( semVidArr ).then( function ( resolve ) {
+                // its ok
+            }, function ( reject ) {
+                // its ok, log it
+            });
+
+            // data is tagged object with videos,semVidArr is merged array of vids
+            // prepare result
+            //filter out videos already watched
+            //return results
+        } )
+
+    }, function ( err ) {
+
+    });
+
+});
+
+router.post('/suggest/videoShow', jsonParser, function (req, res, next) {
+    
+});
+
+router.post('/suggest/searchPages', jsonParser, function (req, res, next) {
+    
+});
 module.exports = router;
