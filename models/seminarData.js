@@ -296,3 +296,38 @@ exports.fetchVidsForTags = function( tags ){
     var promise = collection.find( { tag :{ $in : tags } } ).limit( tags.length * perTagLimit ).toArray();
     return promise;
 }
+
+exports.tagsForWhichVidsAreNotInDbBasedOnArr = function ( arr, tags ) {
+
+    arr.forEach( function ( ele ) {
+        var t = ele.tag;
+        //remove t from tags
+        var inx = tags.indexOf( t );
+        if( inx > -1 ){
+            tags.splice( inx, 1 );
+        }
+    });
+    return tags;
+}
+
+exports.tagsForWhichVidsAreNotInDbBasedOnTagObjPair = function ( obj, tags ) {
+    var retArr = [];
+    tags.forEach( function ( ele ) {
+        if( !obj[ele] ){
+            retArr.push( ele );
+        }
+    });
+    return retArr;
+}
+
+exports.getTagObjPairs = function ( vids ) {
+    var retObj = {};
+    vids.forEach( function ( ele ) {
+        if( !retObj[ele.tag] ){
+            retObj[ele.tag] = {};
+            retObj[ele.tag].vidsArr = [];
+        }
+        retObj[ele.tag].vidsArr.push( ele );
+    });
+    return retObj;
+}
