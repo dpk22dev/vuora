@@ -51,18 +51,69 @@ router.get('/show/:videoId', function (req, res, next) {
     });
 });
 
+router.post('/suggest/recommendation', jsonParser, function (req, res, next) {
+    //var recData = seminarModel.dummyRecommendationPageBackFillApiData;
+    var recData = req.body;
+
+    // get tags to search from
+    var tags = getTagsForRecommendations(recData);
+    _internal( tags, res , processVidsBeforeSendingResultForRecommendationPage );
+
+});
+
+router.post('/suggest/videoShow', jsonParser, function (req, res, next) {
+    //var recData = seminarModel.dummyVideoShowBackFillApiData;
+    var recData = req.body;
+
+    // get tags to search from
+    var tags = getTagsForVidShow(recData);
+    _internal( recData, tags, res , processVidsBeforeSendingResultForVidShowPage  );
+
+});
+
+router.post('/suggest/searchPages', jsonParser, function (req, res, next) {
+    //var recData = seminarModel.dummyVideoSearchBackFillApiData;
+    var recData = req.body;
+
+    if( recData.query && recData.query.length > 0 ){
+        var data = youtubeApi.youtubeSearchDataCreator( { "q" : recData.query } );
+        youtubeApi.searchVideos( data, function ( err, resolve ) {
+            if( resolve.error ){
+                var error = {"msg": "error in fetching videos for query", "err": resolve.error.err };
+                res.send({"error": error});
+            }
+            res.send( resolve.vidsArr );
+        } )
+        return ;
+    }
+
+    // get tags to search from
+    var tags = getTagsForVidShow(recData);
+    _internal( recData, tags, res , processVidsBeforeSendingResultForVidShowPage  );
+
+});
+
+module.exports = router;
+
 var getTagsForRecommendations = function (data) {
     //@todo add logic
     return data.recentlySearched;
 }
 
-router.post('/suggest/recommendation', jsonParser, function (req, res, next) {
-    var recData = seminarModel.dummyRecommendationPageBackFillApiData;
-    //var recData = req.body;
+var getTagsForVidShow = function ( data ) {
+    //@todo add logic
+    return data.recentlySearched;
+}
 
-    // get tags to search from
-    var tags = getTagsForRecommendations(recData);
+var processVidsBeforeSendingResultForRecommendationPage = function (tagObjPair, recData) {
+    return tagObjPair;
+}
 
+var processVidsBeforeSendingResultForVidShowPage = function ( tagObjPair, recData ) {
+    return tagObjPair;
+}
+
+var _internal = function ( recData, tags, res, processVidsBeforeSendingResult ) {
     // get vids for tags
     seminarModel.fetchVidsForTags(tags).then(function (ok) {
 
@@ -88,45 +139,49 @@ router.post('/suggest/recommendation', jsonParser, function (req, res, next) {
                     }
                 })
 
-                //insert videodata to seminarmodel for these tags,
-                // might need to change structure accordingly
-                seminarModel.insertMultipleVids(semVidArr).then(function (resolve) {
-                    // its ok
-                }, function (reject) {
-                    // its ok, log it
-                });
+                if( semVidArr.length > 0 ) {
+                    //insert videodata to seminarmodel for these tags,
+                    // might need to change structure accordingly
+                    seminarModel.insertMultipleVids(semVidArr).then(function (resolve) {
+                        // its ok
 
-                // data is tagged object with videos,semVidArr is merged array of vids
-                // prepare result
-                //filter out videos already watched
-                var tagObjPairProcessed = processVidsBeforeSendingResult(tagObjPair, recData);
-                //return results
-                res.json(tagObjPairProcessed);
+                        var insertedVidsTagObjPair = seminarModel.getTagObjPairs( resolve.ops );
+                        // data is tagged object with videos,semVidArr is merged array of vids
+                        // combination of data and resolve or fetch data from db for remaining tags
+                        tagObjPair = mergeTagVids( tagObjPair, insertedVidsTagObjPair );
+                        // prepare result
+                        //filter out videos already watched
+                        var tagObjPairProcessed = processVidsBeforeSendingResult(tagObjPair, recData);
+                        //return results
+                        res.json(tagObjPairProcessed);
+                    }, function (reject) {
+                        // its ok, log it
+                    });
+                } else {
+                    // prepare result
+                    //filter out videos already watched
+                    var tagObjPairProcessed = processVidsBeforeSendingResult(tagObjPair, recData);
+                    //return results
+                    res.json(tagObjPairProcessed);
+                }
+            });
+        } else {
+            // got all videos from db itself
+            // create result and return
+            var tagObjPairProcessed = processVidsBeforeSendingResult(tagObjPair, recData);
+            res.json(tagObjPairProcessed);
 
-            })
         }
-
-        // got all videos from db itself
-        // create result and return
-        var tagObjPairProcessed = processVidsBeforeSendingResult(tagObjPair, recData);
-        res.json(tagObjPairProcessed);
 
     }, function (err) {
         var error = {"msg": "error in fetching videos for tags", "err": err};
         res.send({"error": error});
     });
+}
 
-});
-
-router.post('/suggest/videoShow', jsonParser, function (req, res, next) {
-
-});
-
-router.post('/suggest/searchPages', jsonParser, function (req, res, next) {
-
-});
-module.exports = router;
-
-var processVidsBeforeSendingResult = function (tagObjPair, recData) {
-    return tagObjPair;
+var mergeTagVids = function( tobj1, tobj2 ){
+    for (var attrname in tobj2) {
+        tobj1[attrname] = tobj2[attrname];
+    }
+    return tobj1;
 }

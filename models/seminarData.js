@@ -108,10 +108,11 @@ var dummyVideoShowBackFillApiData = {
 }
 
 var dummyVideoSearchBackFillApiData = {
-    "recentlySearched" : [],
+    "recentlySearched" : [ 'php', 'angular', 'react','node' ],
     "recentlyWatchedVideoIds" : [],
     "userInterestedTags" : [],
-    "targetTags" : []
+    "targetTags" : [],
+    "query" : ""
 }
 
 
