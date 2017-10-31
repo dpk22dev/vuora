@@ -27,8 +27,8 @@ router.post('/tags', jsonParser, function (req, res, next) {
     });
 });
 
-router.get('/getuser/:id', function (req, res, next) {
-    var userId = req.params.id;
+router.get('/getuser', function (req, res, next) {
+    var userId = req.query.id;
     userUtil.getUser(userId, function (err, response) {
         res.send(response);
     })
