@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SimpleWebRTC Demo</title>
+</head>
+<body>
+<h1 id="title">Start a room</h1>
+<style>
+    .videoContainer {
+        position: relative;
+        width: 200px;
+        height: 150px;
+    }
+    .videoContainer video {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+    }
+    .volume_bar {
+        position: absolute;
+        width: 5px;
+        height: 0px;
+        right: 0px;
+        bottom: 0px;
+        background-color: #12acef;
+    }
+</style>
+<button id="screenShareButton"></button>
+<p id="subTitle"></p>
+
+<button id="start-recording">Start</button>
+<button id="stop-recording" disabled>Stop</button>
+<button id="pause-recording" disabled>Pause</button>
+<button id="resume-recording" disabled>Resume</button>
+
+<form id="createRoom">
+    <input id="sessionInput"/>
+    <button type="submit">Create it!</button>
+</form>
+<div class="videoContainer">
+    <video id="localVideo" style="height: 150px;" oncontextmenu="return false;"></video>
+    <div id="localVolume" class="volume_bar"></div>
+</div>
+<div id="remotes"></div>
+<div id="localStreamList"></div>
+<div id="localScreeList"></div>
+<div id="remoteStreamList"></div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+<script src="../../javascripts/simplewebrtc-with-adapter.bundle.js"></script>
+<script src="../../javascripts/MediaStreamRecorder.js"></script>
+<script src="../../javascripts/socket.io.js"></script>
+<!--<script src="https://github.com/streamproc/MediaStreamRecorder/releases/download/1.3.4/MediaStreamRecorder.js"></script>-->
+
+<script>
+
+    var userId = location.search && location.search.split('?userId=')[1];
+    if( !userId ) userId =1;
+    //var userId= prompt("What's your userId?");
+
+    //var userId = prompt("What's your userId?");
+    // grab the room from the URL
+    var getLastSegmentInPath = function ( ) {
+        var parts =  window.location.pathname.split('/');
+        var lastSegment = parts.pop() || parts.pop();
+        return lastSegment;
+    }
+
+    //caught creen and stream
+    var localStreamData = localScreenData = { enable: false };
+
+    var room = getLastSegmentInPath();
+    var f2fWebRtcSettings = {
+        url: 'localhost:3000',
+        socketio: {
+            path : '/f2fNsp',
+            transports: ['websocket'],
+            query: "userId="+userId
+        },
+        localVideoEl: 'localVideo',
+            // the id/element dom element that will hold remote videos
+            remoteVideosEl: '',
+            // immediately ask for camera access
+            autoRequestMedia: true,
+            debug: true,
+            detectSpeakingEvents: false,
+        blobSavePath: '/f2f/saveBlob',
+        blobGetPath: '/videos'
+    };
+    // create our webrtc connection
+    var webrtc = new SimpleWebRTC( f2fWebRtcSettings );
+
+    // when it's ready, join if we got a room from the URL
+    webrtc.on('readyToCall', function () {
+        // you can name it anything
+        if (room) webrtc.joinRoom(room);
+    });
+
+    function showVolume(el, volume) {
+        if (!el) return;
+        if (volume < -45) { // vary between -45 and -20
+            el.style.height = '0px';
+        } else if (volume > -20) {
+            el.style.height = '100%';
+        } else {
+            el.style.height = '' + Math.floor((volume + 100) * 100 / 25 - 220) + '%';
+        }
+    }
+    webrtc.on('channelMessage', function (peer, label, data) {
+        if (data.type == 'volume') {
+            showVolume(document.getElementById('volume_' + peer.id), data.volume);
+        }
+    });
+    webrtc.on('videoAdded', function (video, peer) {
+        console.log('video added', peer);
+        var remotes = document.getElementById('remotes');
+        if (remotes) {
+            var d = document.createElement('div');
+            d.className = 'videoContainer';
+            d.id = 'container_' + webrtc.getDomId(peer);
+            d.appendChild(video);
+            var vol = document.createElement('div');
+            vol.id = 'volume_' + peer.id;
+            vol.className = 'volume_bar';
+            video.onclick = function () {
+                video.style.width = video.videoWidth + 'px';
+                video.style.height = video.videoHeight + 'px';
+            };
+            d.appendChild(vol);
+            remotes.appendChild(d);
+        }
+    });
+    webrtc.on('videoRemoved', function (video, peer) {
+        console.log('video removed ', peer);
+        var remotes = document.getElementById('remotes');
+        var el = document.getElementById('container_' + webrtc.getDomId(peer));
+        if (remotes && el) {
+            remotes.removeChild(el);
+        }
+    });
+    webrtc.on('volumeChange', function (volume, treshold) {
+        //console.log('own volume', volume);
+        showVolume(document.getElementById('localVolume'), volume);
+    });
+
+    // Since we use this twice we put it here
+    function setRoom(name) {
+        $('form').remove();
+        $('h1').text(name);
+        $('#subTitle').text('Link to join: ' + location.href);
+        $('body').addClass('active');
+    }
+
+    if (room) {
+        setRoom(room);
+    } else {
+        $('form').submit(function () {
+            var val = $('#sessionInput').val().toLowerCase().replace(/\s/g, '-').replace(/[^A-Za-z0-9_\-]/g, '');
+            webrtc.createRoom(val, function (err, name) {
+                console.log(' create room cb', arguments);
+
+                var newUrl = location.pathname + '?' + name;
+                if (!err) {
+                    history.replaceState({foo: 'bar'}, null, newUrl);
+                    setRoom(name);
+                } else {
+                    console.log(err);
+                }
+            });
+            return false;
+        });
+    }
+
+    var button = $('#screenShareButton'),
+            setButton = function (bool) {
+                button.text(bool ? 'share screen' : 'stop sharing');
+            };
+
+    webrtc.on('localStream', function ( stream ) {
+        console.log('local stream created');
+        //var localStreamMediaRecorder = new MediaStreamRecorder(stream);
+        var localStreamMediaRecorder = new MultiStreamRecorder(stream);
+        localStreamData.stream = stream;
+        localStreamData.recorder = localStreamMediaRecorder;
+
+        localStreamMediaRecorder.mimeType = 'video/webm';
+        localStreamMediaRecorder.start(3000);
+        localStreamMediaRecorder.ondataavailable = function(blob) {
+            if( localStreamData.enable != true )
+                    return;
+            // upload each blob to PHP server
+            var blobURL = window.URL.createObjectURL(blob);
+            var div = document.getElementById('localStreamList');
+            div.innerHTML += '<a href="' + blobURL + '">' + blobURL + '</a><br/>';
+            uploadToServer(blob);
+        };
+
+    });
+
+    webrtc.on('peerStreamAdded', function ( rstream ) {
+        console.log('peer stream added');
+        localStreamData.recorder.addStream(  rstream.stream  );
+    });
+
+    webrtc.on('localScreen', function ( stream ) {
+        var mediaRecorder = new MediaStreamRecorder(stream);
+
+        localScreenData.stream = stream;
+        localScreenData.recorder = mediaRecorder;
+
+        mediaRecorder.mimeType = 'video/webm';
+        mediaRecorder.start(3000);
+        mediaRecorder.ondataavailable = function(blob) {
+            if( localStreamData.enable != true )
+                return;
+            // upload each blob to PHP server
+            var blobURL = URL.createObjectURL(blob);
+            var div = document.getElementById('localScreenList');
+            div.innerHTML += '<a href="' + blobURL + '">' + blobURL + '</a><br/>';
+            uploadToServer(blob);
+        };
+
+    });
+
+    webrtc.on('localScreenStopped', function () {
+        setButton(true);
+    });
+
+
+    setButton(true);
+
+    button.click(function () {
+        if (webrtc.getLocalScreen()) {
+            webrtc.stopScreenShare();
+            setButton(true);
+        } else {
+            webrtc.shareScreen(function (err) {
+                if (err) {
+                    setButton(true);
+                } else {
+                    setButton(false);
+                }
+            });
+
+        }
+    });
+
+    function uploadToServer(blob) {
+        //@todo may be we can use differetn socket connection to upload to server
+        // using ajax os of now
+        /*
+        var file = new File([blob], "videoId:"+room+ ";userId:" + userId + ";date:" + (new Date).toISOString().replace(/:|\./g, '-') +';.webm', {
+            type: 'video/webm'
+        });
+        */
+
+        var file = new File([blob], room+ ";" + userId + ";" + (new Date).toISOString().replace(/:|\./g, '-') +';.webm', {
+            type: 'video/webm'
+        });
+        // create FormData
+        var formData = new FormData();
+        formData.append('video-filename', file.name);
+        formData.append('userId', userId);
+        formData.append('room', room );
+        formData.append('video-blob', file);
+
+        var blobSaveUrl = '//' + f2fWebRtcSettings.url + f2fWebRtcSettings.blobSavePath;
+        var blobGetPath = '//' + f2fWebRtcSettings.url + f2fWebRtcSettings.blobGetPath;
+        makeXMLHttpRequest( blobSaveUrl, formData, function( serverUrl ) {
+            var downloadURL = '//' + blobGetPath + '/' + file.name;
+            console.log('File uploaded to this path client guess:', downloadURL);
+            console.log('File uploaded to this path on server:', serverUrl );
+        });
+    }
+
+    function makeXMLHttpRequest(url, data, callback) {
+        var request = new XMLHttpRequest();
+        request.onreadystatechange = function() {
+            if (request.readyState == 4 && request.status == 200) {
+                callback( request.responseText );
+            }
+        };
+        request.open('POST', url);
+        request.send(data);
+    }
+
+
+
+    document.querySelector('#start-recording').onclick = function() {
+        this.disabled = true;
+        localScreenData.enable = localStreamData.enable = true;
+        document.querySelector('#pause-recording').disabled = false;
+        document.querySelector('#stop-recording').disabled = false;
+    };
+
+    document.querySelector('#stop-recording').onclick = function() {
+        this.disabled = true;
+        localScreenData.enable = localStreamData.enable = false;
+
+
+        localScreenData.recorder.stop();
+        if( localScreenData.recorder.stream ){
+            localScreenData.recorder.stream.stop();
+        }
+
+        localStreamData.recorder.stop();
+        localStreamData.recorder.stream.stop();
+
+        document.querySelector('#pause-recording').disabled = true;
+        document.querySelector('#start-recording').disabled = false;
+    };
+
+    document.querySelector('#pause-recording').onclick = function() {
+        this.disabled = true;
+        localScreenData.enable = localStreamData.enable = false;
+
+        localStreamData.recorder.pause();
+        localScreenData.recorder.pause();
+
+        document.querySelector('#resume-recording').disabled = false;
+    };
+
+    document.querySelector('#resume-recording').onclick = function() {
+        this.disabled = true;
+        localScreenData.enable = localStreamData.enable = true;
+
+        localStreamData.recorder.resume();
+        localScreenData.recorder.resume();
+
+        document.querySelector('#pause-recording').disabled = false;
+    };
+
+</script>
+</body>
+</html>

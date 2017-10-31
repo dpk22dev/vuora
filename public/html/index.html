@@ -1,38 +1,45 @@
-<script src="/socket.io/socket.io.js"></script>
+<script src="../../javascripts/socket.io.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
 <script>
-    var socket = io.connect('http://localhost:3000/');
+
+
+    var userId= prompt("What's your userId?");
+    var notiSocket = io.connect('http://localhost:3000',{
+        path : '/chatNsp',
+        transports: ['websocket'],
+        query: "userId="+userId
+    });
 
     // on connection to server, ask for user's name with an anonymous callback
-    socket.on('connect', function(){
+    notiSocket.on('connect', function(){
         // call the server-side function 'adduser' and send one parameter (value of prompt)
         var user = {};
-        user.username = prompt("What's your name?");
+        user.username = userId;
         user.conf = "meeting1";
-        socket.emit('adduser', user);
+        notiSocket.emit('adduser', user);
     });
 
     function upvote(id){
         var data = {};
         data.id = id;
         data.action='upvote';
-        socket.emit('vote', data);
+        notiSocket.emit('vote', data);
     };
 
     function downvote(id){
         var data = {};
         data.id = id;
         data.action='downvote';
-        socket.emit('vote', data);
+        notiSocket.emit('vote', data);
     };
 
     // listener, whenever the server emits 'updatechat', this updates the chat body
-    socket.on('updatechat', function (username, data) {
+    notiSocket.on('updatechat', function (username, data) {
         $('#conversation').append('<b>'+username + ':</b> ' + data + '<br>');
     });
 
     // listener, whenever the server emits 'updaterooms', this updates the room the client is in
-    socket.on('updaterooms', function(rooms, current_room) {
+    notiSocket.on('updaterooms', function(rooms, current_room) {
         $('#rooms').empty();
         $.each(rooms, function(key, value) {
             if(value == current_room){
@@ -45,7 +52,7 @@
     });
 
     function switchRoom(room){
-        socket.emit('switchRoom', room);
+        notiSocket.emit('switchRoom', room);
     }
 
     // on load of page
@@ -55,7 +62,7 @@
             var message = $('#data').val();
             $('#data').val('');
             // tell server to execute 'sendchat' and send along one parameter
-            socket.emit('sendchat', message);
+            notiSocket.emit('sendchat', message);
         });
 
         // when the client hits ENTER on their keyboard
@@ -65,6 +72,14 @@
                 $('#datasend').focus().click();
             }
         });
+    });
+
+    function afterLoginAskForNoti() {
+        notiSocket.emit('receiveNoti', room);
+    }
+
+    notiSocket.on('serverPushNoti', function (data) {
+        $('#conversation').append('<b>' + data + '<br>');
     });
 
 </script>

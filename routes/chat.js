@@ -34,15 +34,42 @@ router.get('/', function (req, res, next) {
 
 });
 
+router.get('/glogin', function (req, res, next) {
+    //res.sendfile('/public/html/index.html');
+    res.sendFile('glogin.html', {root: path.join(__dirname, '../public/html')});
+
+});
+
 router.get('/lclbk', function (req, res) {
     var params = req.query;
     var code = params.code;
-    linkedin.getProfile(code);
-    res.sendFile('thanks.html', {root: path.join(__dirname, '../public/html')});
+    linkedin.getProfile(code, function(user){
+        var id = user.id;
+        res.cookie('jarvis', id);
+        res.writeHead(301,
+            {Location: 'http://localhost:8080'}
+        );
+        res.end();
+    });
+});
+
+router.get('/gclbk', function (req, res) {
+    var params = req.query;
+    var code = params.code;
+    linkedin.getProfile(code, function (response) {
+        var id = response.id;
+        res.cookie('jarvis', id, {maxAge: 900000, httpOnly: true});
+        res.writeHead(301,
+            {Location: 'http://localhost:8080'}
+        );
+        res.end();
+    });
 });
 
 router.get('/qmap/:vconf', function (req, res) {
-    res.send(vconf.getQuestionMap(req.params.vconf));
+    vconf.getQuestionMap(req.params.vconf, function (err, response) {
+        res.send(response);
+    });
 });
 
 module.exports = router;

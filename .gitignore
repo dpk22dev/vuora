@@ -49,5 +49,10 @@ jspm_packages
 .yarn-integrity
 
 .idea
+vuora.iml
+*.out
+faltu/
+faltu.*
+public/videos
 package-lock.json
 *.iml

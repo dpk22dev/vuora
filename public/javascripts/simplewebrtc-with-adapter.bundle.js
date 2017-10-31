@@ -1,0 +1,1 @@
+../../node_modules/simplewebrtc/out/simplewebrtc-with-adapter.bundle.js

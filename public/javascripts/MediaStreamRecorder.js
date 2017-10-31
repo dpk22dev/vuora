@@ -1,0 +1,1 @@
+../../ext/msr/MediaStreamRecorder.js
