@@ -50,21 +50,21 @@ router.get('/:videoId', function(req, res, next) {
     
     var inpData = {};
     inpData.videoId = videoId;
-    seminarModel.getMidForVideoId( inpData ).then( function ( ok ) {
-        timeLineSrv.getUsersForMid( ok.mid, function ( err, users ) {
-            if( err ){
-                res.send('Error while fetching user for mid');
+    //now poppa deals with videoid, use that
+    //seminarModel.getMidForVideoId( inpData ).then( function ( ok ) {
+        timeLineSrv.getEventByVideoId( inpData, function ( err, users ) {
+            if( !err ){
+                res.send('Error while fetching users for videoId');
             }
             if(  users.requestor == userId || users.requestee == userId ){
                 res.sendFile('f2f.html', {root: path.join(__dirname, '../public/html')});
             } else {
                 res.send('Access denied');
             }
-        })
-    }, function ( err ) {
+        });
+   /* }, function ( err ) {
         res.send('Error while fetching users for video');
-    });
-    
+    });*/
 
 });
 

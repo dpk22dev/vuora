@@ -86,6 +86,7 @@ broadcastId: v_E3MqWZYJ8
 youtube url:
 https://youtu.be/v_E3MqWZYJ8
 
+
 youtube iframe:
 <iframe width="640" height="360" src="https://www.youtube.com/embed/v_E3MqWZYJ8" frameborder="0" allowfullscreen></iframe>
 
@@ -95,3 +96,6 @@ youtube iframe:
 urls
 quality of video hd constraints, audio/video, screenshot using canvas is possible, css can be used to apply effects to video element, webgl textures,
 https://www.html5rocks.com/en/tutorials/getusermedia/intro/
+
+mongodb api ref
+http://mongodb.github.io/node-mongodb-native/2.2/api/

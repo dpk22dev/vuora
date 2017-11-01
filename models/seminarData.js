@@ -3,6 +3,8 @@ const config = require('config');
 var utils = require('../lib/util');
 const customLogger = require('../config/logger');
 
+// put this value from config
+const perTagLimit = 25;
 /*
 broadcast.id will be used as youtube id for which
 youtube url: https://youtu.be/broadcast.id
@@ -83,6 +85,37 @@ var dummyTransitionData = {
         "broadcastStatus" : "testing",
     }
 }
+
+var youtubeSearchParams= {
+    "part": "id, snippet",
+    "q" : "tag",
+    "maxResults" : 25,
+    "type" : "video"
+}
+ 
+var dummyRecommendationPageBackFillApiData = {
+    "part" : "id, snippet",
+    "recentlySearched" : ["nodejs", "mongodb"],
+    "recentlyWatchedVideoIds" : [],
+    "userInterestedTags" : [],
+}
+ 
+var dummyVideoShowBackFillApiData = {
+    "recentlySearched" : [],
+    "recentlyWatchedVideoIds" : [],
+    "userInterestedTags" : [],
+    "targetTags" : []
+}
+
+var dummyVideoSearchBackFillApiData = {
+    "recentlySearched" : [ 'php', 'angular', 'react','node' ],
+    "recentlyWatchedVideoIds" : [],
+    "userInterestedTags" : [],
+    "targetTags" : [],
+    "query" : ""
+}
+
+
 /*
 {
     "title" :  "test seminar 1 title",
@@ -100,7 +133,10 @@ exports.seminarDummyData = dummyData;
 exports.dummyStreamFetchData = dummyStreamFetchData;
 exports.dummyTransitionData = dummyTransitionData;
 exports.dummyF2fData = dummyF2fData
-
+exports.youtubeSearchParams = youtubeSearchParams;
+exports.dummyRecommendationPageBackFillApiData =dummyRecommendationPageBackFillApiData;
+exports.dummyVideoShowBackFillApiData = dummyVideoShowBackFillApiData ;
+exports.dummyVideoSearchBackFillApiData = dummyVideoSearchBackFillApiData;
 
 function F2fData( data ) {
 
@@ -224,4 +260,75 @@ exports.getDataForVideoId = function ( data ) {
 
     var promise = collection.findOne( { videoId: data.videoId } );
     return promise;
+}
+
+//array returned from youtube api
+exports.createDataForMultipleVids = function ( vidArr, tag ) {
+    //extract only required fields and return array
+    var retArr = [];
+    vidArr.forEach( function ( ele ) {
+        var temp ={};
+        temp.broadcast = {};
+        temp.broadcast.id = ele.id.videoId;
+        temp.snippet = ele.snippet;
+        temp.videoId = utils.getId();
+        temp.mid = "";
+        temp.userId = "";
+        temp.tag = tag;
+        retArr.push( temp );
+    });
+    return retArr;
+}
+
+exports.insertMultipleVids = function ( data ) {
+    var broadcastCol = config.get("mongodb.broadcastCol");
+    var mongoDB = mongo.getInstance();
+    var collection = mongoDB.collection( broadcastCol );
+
+    var promise = collection.insertMany( data );
+    return promise;
+}
+
+exports.fetchVidsForTags = function( tags ){
+    var broadcastCol = config.get("mongodb.broadcastCol");
+    var mongoDB = mongo.getInstance();
+    var collection = mongoDB.collection( broadcastCol );
+
+    var promise = collection.find( { tag :{ $in : tags } } ).limit( tags.length * perTagLimit ).toArray();
+    return promise;
+}
+
+exports.tagsForWhichVidsAreNotInDbBasedOnArr = function ( arr, tags ) {
+
+    arr.forEach( function ( ele ) {
+        var t = ele.tag;
+        //remove t from tags
+        var inx = tags.indexOf( t );
+        if( inx > -1 ){
+            tags.splice( inx, 1 );
+        }
+    });
+    return tags;
+}
+
+exports.tagsForWhichVidsAreNotInDbBasedOnTagObjPair = function ( obj, tags ) {
+    var retArr = [];
+    tags.forEach( function ( ele ) {
+        if( !obj[ele] ){
+            retArr.push( ele );
+        }
+    });
+    return retArr;
+}
+
+exports.getTagObjPairs = function ( vids ) {
+    var retObj = {};
+    vids.forEach( function ( ele ) {
+        if( !retObj[ele.tag] ){
+            retObj[ele.tag] = {};
+            retObj[ele.tag].vidsArr = [];
+        }
+        retObj[ele.tag].vidsArr.push( ele );
+    });
+    return retObj;
 }
