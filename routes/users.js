@@ -62,7 +62,7 @@ router.post('/signup', jsonParser, function (req, res) {
 router.post('/signin', jsonParser, function (req, res) {
     var user = req.body;
     loginUtil.signIn(user, function (err, response) {
-        if (!err) {
+        if (err) {
             res.send(err);
         } else {
             var token = jsonwebtoken.sign({
