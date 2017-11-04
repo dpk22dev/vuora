@@ -112,18 +112,14 @@ router.post('/signup', jsonParser, function (req, res) {
 
 router.post('/signin', jsonParser, function (req, res) {
     var user = req.body;
-    loginUtil.signIn(user, function (err, response) {
-        if (err) {
-            res.send(err);
-        } else {
-            var token = jsonwebtoken.sign({
-                auth: user,
-                agent: req.headers['user-agent'],
-                exp: Math.floor(new Date().getTime() / 1000) + 7 * 24 * 60 * 60
-            }, config.jwtsecret);
-            res.cookie('user', token, {domain: '.intelverse.com', maxAge: 900000, httpOnly: true});
-            res.send(response);
-        }
+    loginUtil.signIn(user, function (response) {
+        var token = jsonwebtoken.sign({
+            auth: user,
+            agent: req.headers['user-agent'],
+            exp: Math.floor(new Date().getTime() / 1000) + 7 * 24 * 60 * 60
+        }, config.jwtsecret);
+        res.cookie('user', token, {domain: '.intelverse.com', maxAge: 900000, httpOnly: true});
+        res.send(response);
     })
 });
 
@@ -151,12 +147,8 @@ router.post('/passwordreset', jsonParser, function (req, res) {
 
 router.put('/users', jsonParser, function (req, res) {
     var user = req.body;
-    userUtil.updateUser(user, function (err, result) {
-        if (err) {
-            res.send(err)
-        } else {
-            res.send(result);
-        }
+    userUtil.updateUser(user, function (result) {
+        res.send(result);
     })
 });
 

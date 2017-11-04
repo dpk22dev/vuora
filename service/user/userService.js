@@ -79,12 +79,16 @@ userUtil.createUser = function (id, name, image, organisations, colleges, callba
     var mongoDB = mongo.getInstance();
     var collection = mongoDB.collection(USER_COLLECTION);
     collection.insertOne(user, function (err, res) {
-        updateToElastic(ES_INDEX, ES_USER_TYPE, id, function (err, result) {
-            if (result) {
-                result = user;
-            }
-            callback(utils.convertToResponse(err, result, "Error occured while updating to ES"))
-        });
+        if (err) {
+            callback(utils.convertToResponse(err, result, "Error occured while updating to Mongo"))
+        } else {
+            updateToElastic(ES_INDEX, ES_USER_TYPE, id, function (err, result) {
+                if (result) {
+                    result = user;
+                }
+                callback(utils.convertToResponse(err, result, "Error occured while updating to ES"))
+            });
+        }
     });
 };
 
@@ -126,7 +130,7 @@ userUtil.getTags = function (id, callback) {
     var mongoDB = mongo.getInstance();
     var collection = mongoDB.collection(USER_TAG_COLLECTION);
     collection.find({userId: id}).toArray(function (err, results) {
-        callback(utils.convertToResponse(err, results, null));
+        callback(utils.convertToResponse(err, results, "Error occured while getting tags from mongo"));
     });
 };
 
@@ -155,7 +159,16 @@ userUtil.updateUser = function (user, callback) {
                 image: user.image
             }
         }, function (err, result) {
-            updateToElastic(ES_INDEX, ES_USER_TYPE, user._id, callback);
+            if (err) {
+                callback(utils.convertToResponse(err, result, "Error occured while updating result to mongo"))
+            } else {
+                updateToElastic(ES_INDEX, ES_USER_TYPE, user._id, function (err, result) {
+                    if (result) {
+                        result = user;
+                    }
+                    callback(utils.convertToResponse(err, result, "Error occured while updating result to mongo"))
+                });
+            }
         });
 };
 
@@ -163,7 +176,7 @@ userUtil.getUser = function (id, callback) {
     var mongoDB = mongo.getInstance();
     var collection = mongoDB.collection(USER_COLLECTION);
     collection.findOne({userId: id}, function (err, res) {
-        callback(err, res);
+        callback(utils.convertToResponse(err, res, "Error occured while getting user data from mongo"));
     })
 };
 
