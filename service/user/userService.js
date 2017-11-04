@@ -11,7 +11,7 @@ var USER_TAG_COLLECTION = "usertag";
 var USER_CRED = "usercred";
 
 function User(id, name, image, organisations, colleges) {
-    this._id = id;
+    this.userId = id;
     this.name = name;
     this.image = image;
     this.organisations = organisations;
@@ -51,7 +51,7 @@ function updateToElastic(index, type, id, callback) {
     var mongoDB = mongo.getInstance();
     var collection = mongoDB.collection(USER_TAG_COLLECTION);
     var tags = [];
-    collection.find({_id: id}).toArray(function (err, results) {
+    collection.find({userId: id}).toArray(function (err, results) {
         results.forEach(function (result) {
             var tag = result.tag;
             if (tags.indexOf(tag) < 0) {
@@ -99,7 +99,7 @@ userUtil.addCollege = function (id, title, degree, tags, grade, from, to, callba
         if (response) {
             var colleges = response.colleges;
             colleges.push(college);
-            collection.updateOne({_id: id}
+            collection.updateOne({userId: id}
                 , {$set: {colleges: colleges}}, function (err, result) {
                     updateToElastic(ES_INDEX, ES_USER_TYPE, id, callback);
                 });
@@ -115,7 +115,7 @@ userUtil.addOrganisation = function (id, title, company, location, from, to, cur
         if (response) {
             var orgs = response.organisations;
             orgs.push(org);
-            collection.updateOne({_id: id}
+            collection.updateOne({userId: id}
                 , {$set: {organisations: orgs}}, function (err, result) {
                     updateToElastic(ES_INDEX, ES_USER_TYPE, id, callback);
                 });
@@ -124,7 +124,7 @@ userUtil.addOrganisation = function (id, title, company, location, from, to, cur
 };
 
 userUtil.updateUser = function (user, callback) {
-    collection.updateOne({_id: user._id}
+    collection.updateOne({userId: user.id}
         , {
             $set: {
                 organisations: user.organisations,
@@ -140,7 +140,7 @@ userUtil.updateUser = function (user, callback) {
 userUtil.getUser = function (id, callback) {
     var mongoDB = mongo.getInstance();
     var collection = mongoDB.collection(USER_COLLECTION);
-    collection.findOne({_id: id}, function (err, res) {
+    collection.findOne({userId: id}, function (err, res) {
         callback(err, res);
     })
 };
