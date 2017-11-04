@@ -4,6 +4,8 @@ var loginUtil = require('./../lib/login');
 var router = express.Router();
 var async = require('async');
 var bodyParser = require('body-parser');
+var config = require('./../config/config');
+var jsonwebtoken = require("jsonwebtoken");
 
 var jsonParser = bodyParser.json({type: 'application/json'});
 
@@ -18,9 +20,9 @@ router.post('/tags', jsonParser, function (req, res, next) {
     var tags = body.tags;
     var tagArr = [];
     tags.forEach(function (tag) {
-        var tmpTag={};
+        var tmpTag = {};
         tmpTag.user = userId;
-        tmpTag.tag=tag;
+        tmpTag.tag = tag;
         tagArr.push(tmpTag);
     });
     async.map(tagArr, setTag, function (err, results) {
@@ -60,9 +62,15 @@ router.post('/signup', jsonParser, function (req, res) {
 router.post('/signin', jsonParser, function (req, res) {
     var user = req.body;
     loginUtil.signIn(user, function (err, response) {
-        if (err) {
+        if (!err) {
             res.send(err);
         } else {
+            var token = jsonwebtoken.sign({
+                auth: user,
+                agent: req.headers['user-agent'],
+                exp: Math.floor(new Date().getTime() / 1000) + 7 * 24 * 60 * 60
+            }, config.jwtsecret);
+            res.cookie('user', token, {domain: '.intelverse.com', maxAge: 900000, httpOnly: true});
             res.send(response);
         }
     })

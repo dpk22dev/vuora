@@ -15,8 +15,10 @@ var timeline = require('./routes/timeline');
 var seminar = require('./routes/seminar');
 var video = require('./routes/video');
 var config = require('./config/config');
+var cookieParser = require('cookie-parser');
 
 var app = express();
+app.use(cookieParser());
 
 process.env.NODE_CONFIG_DIR = '../config';
 
@@ -85,30 +87,33 @@ app.use(function (req, res, next) {
     req.notiIo = notiIo;
     next();
 });
-/*
- app.use(function (req, res, next) {
- next(); //will remove once dev is done
 
- var user = req.headers.user;
- if (req.headers && req.headers.authorization
- && req.headers.authorization.split(' ')[0] === 'JWT') {
- var token = req.headers.authorization.split(' ')[1];
- var decoded = jsonwebtoken.verify(token, config.jwtsecret);
- if (!decoded || decoded.auth != user) {
- res.status(401).send('Unauthorized access detected');
- } else {
- next();
- }
- } else {
- var token = jsonwebtoken.sign({
- auth: user,
- agent: req.headers['user-agent'],
- exp: Math.floor(new Date().getTime() / 1000) + 7 * 24 * 60 * 60
- }, config.jwtsecret);
- res.cookie('user', token, {maxAge: 900000, httpOnly: true});
- res.status(401).send('autorization token is missing new token created!!!');
- }
- });*/
+app.use(function (req, res, next) {
+    var url = req.url;
+    if (url === '/users/signin') {
+        next();
+    } else {
+        var user = req.headers.user;
+        var token = req.cookies.jarvis;
+        if (token) {
+            var decoded = jsonwebtoken.verify(token, config.jwtsecret);
+            if (!decoded || decoded.auth != user) {
+                res.status(401).send('Unauthorized access detected');
+            } else {
+                next();
+            }
+        } else {
+            var token = jsonwebtoken.sign({
+                auth: user,
+                agent: req.headers['user-agent'],
+                exp: Math.floor(new Date().getTime() / 1000) + 7 * 24 * 60 * 60
+            }, config.jwtsecret);
+            res.cookie('jarvis', token, {maxAge: 900000, httpOnly: true});
+            res.status(401).send('autorization token is missing new token created!!!');
+        }
+    }
+});
+
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
