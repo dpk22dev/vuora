@@ -6,6 +6,8 @@ var cookieParser = require('cookie-parser');
 //var bodyParser = require('body-parser');
 //var jsonwebtoken = require("jsonwebtoken");
 
+var cors = require('cors')
+
 var routes = require('./routes/index');
 var users = require('./routes/users');
 var chat = require('./routes/chat');
@@ -111,6 +113,9 @@ app.use(function (req, res, next) {
 });*/
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+
+app.use(cors());
+
 app.use(logger('dev'));
 // app.use(bodyParser.urlencoded());
 // app.use(bodyParser.json());
