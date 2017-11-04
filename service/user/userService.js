@@ -42,7 +42,7 @@ function College(title, degree, tags, grade, from, to) {
 }
 
 function UserTag(id, tag, rating) {
-    this._id = id;
+    this.userId = id;
     this.tag = tag;
     this.rating = rating;
 }
