@@ -79,7 +79,12 @@ userUtil.createUser = function (id, name, image, organisations, colleges, callba
     var mongoDB = mongo.getInstance();
     var collection = mongoDB.collection(USER_COLLECTION);
     collection.insertOne(user, function (err, res) {
-        updateToElastic(ES_INDEX, ES_USER_TYPE, id, callback);
+        updateToElastic(ES_INDEX, ES_USER_TYPE, id, function (err, result) {
+            if (result) {
+                result = user;
+            }
+            callback(utils.convertToResponse(err, result, "Error occured while updating to ES"))
+        });
     });
 };
 
@@ -89,7 +94,16 @@ userUtil.setTags = function (id, tag, rating, callback) {
     var mongoDB = mongo.getInstance();
     var collection = mongoDB.collection(USER_TAG_COLLECTION);
     collection.insertOne(userTag, function (err, res) {
-        updateToElastic(ES_INDEX, ES_USER_TYPE, id, callback);
+        if (err) {
+            callback(utils.convertToResponse(err, res, "Error occured while saving to mongo"));
+        } else {
+            updateToElastic(ES_INDEX, ES_USER_TYPE, id, function (err, res) {
+                if (res) {
+                    res = {data: 'Successfully inserted'};
+                }
+                callback(utils.convertToResponse(err, res, "Error occured while saving to elastic"));
+            });
+        }
     });
 };
 
@@ -174,30 +188,37 @@ userUtil.saveUserActivity = function (data, callback) {
     elastic.index(ES_INDEX, ES_ACTIVITY_TYPE, data, callback);
 };
 
+/*userUtil.getTagSuggestion = function (tag, callback) {
+ var query =
+ {
+ "query": {
+ "regexp": {
+ "name": {
+ "value": tag,
+ "flags": "INTERSECTION|COMPLEMENT|EMPTY"
+ }
+ }
+ }
+ };
+ elastic.search(ES_INDEX, ES_USER_TYPE, query, function (err, res) {
+ var suggestions = [];
+ if (res) {
+ if (res) {
+ res.forEach(function (obj) {
+ var suggestion = {};
+ suggestion.val = obj._source.name;
+ suggestions.push(suggestion);
+ })
+ }
+ }
+ callback(err, suggestions);
+ })
+ };*/
+
 userUtil.getTagSuggestion = function (tag, callback) {
-    var query =
-        {
-            "query": {
-                "regexp": {
-                    "name": {
-                        "value": tag,
-                        "flags": "INTERSECTION|COMPLEMENT|EMPTY"
-                    }
-                }
-            }
-        };
-    elastic.search(ES_INDEX, ES_USER_TYPE, query, function (err, res) {
-        var suggestions = [];
-        if (res) {
-            if (res) {
-                res.forEach(function (obj) {
-                    var suggestion = {};
-                    suggestion.val = obj._source.name;
-                    suggestions.push(suggestion);
-                })
-            }
-        }
-        callback(err, suggestions);
+    var url = 'https://stackoverflow.com/filter/tags?q=' + tag + '&newstyle=true&_=' + new Date().getTime();
+    utils.get(url, function (err, data) {
+        callback(utils.convertToResponse(err, data, "Error occured while getting tag"));
     })
 };
 module.exports = userUtil;
