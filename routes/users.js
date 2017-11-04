@@ -18,10 +18,12 @@ router.post('/tags', jsonParser, function (req, res, next) {
     var tags = body.tags;
     var tagArr = [];
     tags.forEach(function (tag) {
-        tag.user = userId;
-        tagArr.push(tag);
+        var tmpTag={};
+        tmpTag.user = userId;
+        tmpTag.tag=tag;
+        tagArr.push(tmpTag);
     });
-    async.map(tags, setTag, function (err, results) {
+    async.map(tagArr, setTag, function (err, results) {
         res.stausCode = 202;
         res.send();
     });
