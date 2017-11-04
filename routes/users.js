@@ -19,16 +19,64 @@ router.post('/tags', jsonParser, function (req, res, next) {
     var userId = body.id;
     var tags = body.tags;
     var tagArr = [];
-    tags.forEach(function (tag) {
+    tags.forEach(function (obj) {
         var tmpTag = {};
         tmpTag.user = userId;
-        tmpTag.tag = tag;
+        tmpTag.tag = obj.tag;
+        tmpTag.rate = obj.rating;
         tagArr.push(tmpTag);
     });
     async.map(tagArr, setTag, function (err, results) {
         res.stausCode = 202;
         res.send();
     });
+});
+
+router.put('/colleges', jsonParser, function (req, res) {
+    var body = req.body;
+    var id = body.id;
+    var colleges = body.colleges;
+    var collArr = [];
+    colleges.forEach(function (coll) {
+        var college = {};
+        college.title = coll.title || "";
+        college.degree = coll.degree || "";
+        college.tags = coll.tags || [];
+        college.grades = coll.grades || "";
+        college.from = coll.from || 0;
+        college.to = coll.to || 0;
+        collArr.push(college);
+    });
+    userUtil.setCollege(id, collArr, function (result) {
+        res.send(result);
+    })
+});
+
+router.put('/orgs', jsonParser, function (req, res) {
+    var body = req.body;
+    var id = body.id;
+    var companies = body.companies;
+    var orgArr = [];
+    companies.forEach(function (company) {
+        var org = {};
+        org.title = company.title || "";
+        org.company = company.company || "";
+        org.location = company.location || "";
+        org.current = company.current || false;
+        org.from = company.from || 0;
+        org.to = company.to || 0;
+        orgArr.push(org);
+    });
+    userUtil.setOrganisation(id, orgArr, function (result) {
+        res.send(result);
+    })
+});
+
+router.get('/tags', function (req, res) {
+    var userId = req.query.id;
+    userUtil.getTags(userId, function (result) {
+        res.send(result);
+    })
 });
 
 router.get('/getuser', function (req, res, next) {

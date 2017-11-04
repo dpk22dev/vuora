@@ -10,15 +10,11 @@ var timelineUtil = require('./../lib/timelineService');
 var jsonParser = bodyParser.json({type: 'application/json'});
 
 router.get('/', function (req, res) {
-    var uid = req.query.uid;
+    var uid = req.query.id;
     var from = req.query.from;
     var to = req.query.to;
-    timelineUtil.getEventsByRange(uid, from, to, function (err, results) {
-        if (err) {
-            res.send(err);
-        } else {
-            res.send(results);
-        }
+    timelineUtil.getEventsByRange(uid, from, to, function (result) {
+        res.send(result);
     })
 });
 

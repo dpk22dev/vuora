@@ -6,7 +6,7 @@ var cookieParser = require('cookie-parser');
 //var bodyParser = require('body-parser');
 var jsonwebtoken = require("jsonwebtoken");
 
-var cors = require('cors')
+var cors = require('cors');
 
 var routes = require('./routes/index');
 var users = require('./routes/users');

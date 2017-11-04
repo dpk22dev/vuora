@@ -2,7 +2,9 @@
  * Created by vinay.sahu on 10/7/17.
  */
 var mongo = require('./../../lib/mongo');
+var Long = require('mongodb').Long;
 var elastic = require('./../../lib/elasticSearchWrapper');
+var utils = require('./../../lib/util');
 var ES_INDEX = 'vuora';
 var ES_USER_TYPE = 'users';
 var ES_ACTIVITY_TYPE = 'activity';
@@ -22,8 +24,8 @@ function Organisation(title, company, location, from, to, current) {
     this.title = title;
     this.company = company;
     this.location = location;
-    this.from = from;
-    this.to = to;
+    this.from = Long.fromNumber(from);
+    this.to = Long.fromNumber(to);
     this.current = new Boolean(current);
 }
 
@@ -37,8 +39,8 @@ function College(title, degree, tags, grade, from, to) {
     this.degree = degree;
     this.tags = tags;
     this.grade = grade;
-    this.from = from;
-    this.to = to;
+    this.from = Long.fromNumber(from);
+    this.to = Long.fromNumber(to);
 }
 
 function UserTag(id, tag, rating) {
@@ -91,36 +93,42 @@ userUtil.setTags = function (id, tag, rating, callback) {
     });
 };
 
-userUtil.addCollege = function (id, title, degree, tags, grade, from, to, callback) {
+userUtil.setCollege = function (id, colleges, callback) {
     var mongoDB = mongo.getInstance();
     var collection = mongoDB.collection(USER_COLLECTION);
-    var college = new College(title, degree, tags, grade, from, to);
-    userUtil.getUser(id, function (err, response) {
-        if (response) {
-            var colleges = response.colleges;
-            colleges.push(college);
-            collection.updateOne({userId: id}
-                , {$set: {colleges: colleges}}, function (err, result) {
-                    updateToElastic(ES_INDEX, ES_USER_TYPE, id, callback);
+    collection.updateOne({userId: id}
+        , {$set: {colleges: colleges}}, {upsert: true, safe: false}, function (err, result) {
+            if (result) {
+                updateToElastic(ES_INDEX, ES_USER_TYPE, id, function (err, result) {
+                    callback(utils.convertToResponse(err, result, "error occured while saving to ES"));
                 });
-        }
+            } else {
+                callback(utils.convertToResponse(err, result, "error occured while saving to mongo"))
+            }
+        });
+};
+
+userUtil.getTags = function (id, callback) {
+    var mongoDB = mongo.getInstance();
+    var collection = mongoDB.collection(USER_TAG_COLLECTION);
+    collection.find({userId: id}).toArray(function (err, results) {
+        callback(utils.convertToResponse(err, results, null));
     });
 };
 
-userUtil.addOrganisation = function (id, title, company, location, from, to, current, callback) {
+userUtil.setOrganisation = function (id, organisations, callback) {
     var mongoDB = mongo.getInstance();
     var collection = mongoDB.collection(USER_COLLECTION);
-    var org = new Organisation(title, company, location, from, to, current);
-    userUtil.getUser(id, function (err, response) {
-        if (response) {
-            var orgs = response.organisations;
-            orgs.push(org);
-            collection.updateOne({userId: id}
-                , {$set: {organisations: orgs}}, function (err, result) {
-                    updateToElastic(ES_INDEX, ES_USER_TYPE, id, callback);
+    collection.updateOne({userId: id}
+        , {$set: {companies: organisations}}, {upsert: true, safe: false}, function (err, result) {
+            if (result) {
+                updateToElastic(ES_INDEX, ES_USER_TYPE, id, function (err, result) {
+                    callback(utils.convertToResponse(err, result, "error occured while saving to ES"));
                 });
-        }
-    });
+            } else {
+                callback(utils.convertToResponse(err, result, "error occured while saving to mongo"))
+            }
+        });
 };
 
 userUtil.updateUser = function (user, callback) {
