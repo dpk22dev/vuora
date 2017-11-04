@@ -138,6 +138,7 @@ exports.dummyRecommendationPageBackFillApiData =dummyRecommendationPageBackFillA
 exports.dummyVideoShowBackFillApiData = dummyVideoShowBackFillApiData ;
 exports.dummyVideoSearchBackFillApiData = dummyVideoSearchBackFillApiData;
 
+
 function F2fData( data ) {
 
     var obj = {
@@ -155,6 +156,59 @@ function F2fData( data ) {
     return obj;
 }
 
+exports.createSeminarData = function ( data  ) {
+
+    var semData = {
+        "userID" : data.userId,
+        "broadcast" : {
+            "part": "snippet,status,contentDetails",
+            "resource": {
+                "snippet": {
+                    "title": data.bTitle,
+                    "description" : data.bDescription,
+                    "scheduledStartTime": data.bStartDateTime,
+                    "scheduledEndTime": data.bEndDateTime,
+                },
+                "status": {
+                    "privacyStatus": "private",
+                },
+                "contentDetails": {
+                    "monitorStream": {
+                        "enableMonitorStream": true,
+                    }
+                }
+            }
+        },
+        "stream" : {
+            "part": "snippet, status, cdn",
+            "resource": {
+                "snippet": {
+                    "title": data.streamTitle,
+                    "desc": data.streamDesc
+                },
+                "cdn": {
+                    "format": "360p",
+                    "ingestionType": "rtmp"
+                }
+            }
+        },
+        "binding" : {
+            "part": "id, snippet,status,contentDetails",
+        },
+        "mid" : "",
+        "videoId" : "",
+        "url" : ""
+    };
+
+    if( !semData.videoId ){
+        semData.videoId = utils.getId();
+    }
+    if( !semData.url ){
+        semData.url = "video/show/"+semData.videoId;
+    }
+
+    return semData;
+}
 
 exports.convertModel2UserData = function ( data ) {
 
