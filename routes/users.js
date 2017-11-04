@@ -88,12 +88,9 @@ router.get('/getuser', function (req, res, next) {
 
 router.get('/suggestions/tag', function (req, res, next) {
     var tag = req.query.t;
-    var tags = [];
-    tags.push(tag);
-    tags.push(tag + ".*");
-    async.map(tags, userUtil.getTagSuggestion, function (err, response) {
-        res.send(response);
-    });
+    userUtil.getTagSuggestion(tag, function (result) {
+        res.send(result);
+    })
 });
 
 router.post('/signup', jsonParser, function (req, res) {
