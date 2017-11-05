@@ -16,6 +16,7 @@ var selfGoogleAuth = require('./routes/selfGoogleAuth');
 var timeline = require('./routes/timeline');
 var seminar = require('./routes/seminar');
 var video = require('./routes/video');
+var questions = require('./routes/questions');
 var config = require('./config/config');
 var cookieParser = require('cookie-parser');
 
@@ -93,28 +94,28 @@ app.use(function (req, res, next) {
 app.use(function (req, res, next) {
     next();
     /*var url = req.url;
-    if (true) {
-        next();
-    } else {
-        var user = req.headers.user;
-        var token = req.cookies.jarvis;
-        if (token) {
-            var decoded = jsonwebtoken.verify(token, config.jwtsecret);
-            if (!decoded || decoded.auth != user) {
-                res.status(401).send('Unauthorized access detected');
-            } else {
-                next();
-            }
-        } else {
-            var token = jsonwebtoken.sign({
-                auth: user,
-                agent: req.headers['user-agent'],
-                exp: Math.floor(new Date().getTime() / 1000) + 7 * 24 * 60 * 60
-            }, config.jwtsecret);
-            res.cookie('jarvis', token, {maxAge: 900000, httpOnly: true});
-            res.status(401).send('autorization token is missing new token created!!!');
-        }
-    }*/
+     if (true) {
+     next();
+     } else {
+     var user = req.headers.user;
+     var token = req.cookies.jarvis;
+     if (token) {
+     var decoded = jsonwebtoken.verify(token, config.jwtsecret);
+     if (!decoded || decoded.auth != user) {
+     res.status(401).send('Unauthorized access detected');
+     } else {
+     next();
+     }
+     } else {
+     var token = jsonwebtoken.sign({
+     auth: user,
+     agent: req.headers['user-agent'],
+     exp: Math.floor(new Date().getTime() / 1000) + 7 * 24 * 60 * 60
+     }, config.jwtsecret);
+     res.cookie('jarvis', token, {maxAge: 900000, httpOnly: true});
+     res.status(401).send('autorization token is missing new token created!!!');
+     }
+     }*/
 });
 
 // uncomment after placing your favicon in /public
@@ -136,6 +137,7 @@ app.use('/seminar', seminar);
 app.use('/timeline', timeline);
 app.use('/f2f', f2f);
 app.use('/video', video);
+app.use('/questions', questions);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
