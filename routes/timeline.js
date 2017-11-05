@@ -53,6 +53,7 @@ router.post('/events/decline', jsonParser, function (req, res) {
 });
 
 router.post('/seminar/create', jsonParser, function (req, res) {
+    req.body.userId = ! req.params.userId ? 101 : req.params.userId;
     var body = req.body;
     var type = req.query.type;
     timelineUtil.createSeminar(body, function (err, result) {

@@ -99,3 +99,6 @@ https://www.html5rocks.com/en/tutorials/getusermedia/intro/
 
 mongodb api ref
 http://mongodb.github.io/node-mongodb-native/2.2/api/
+
+
+webpack-dev-server --host 0.0.0.0 --port 80
