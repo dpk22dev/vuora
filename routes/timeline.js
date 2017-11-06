@@ -53,7 +53,7 @@ router.post('/events/decline', jsonParser, function (req, res) {
 });
 
 router.post('/seminar/create', jsonParser, function (req, res) {
-    req.body.userId = ! req.params.userId ? 101 : req.params.userId;
+    req.body.userId = !req.params.userId ? 101 : req.params.userId;
     var body = req.body;
     var type = req.query.type;
     timelineUtil.createSeminar(body, function (err, result) {
@@ -81,8 +81,8 @@ router.post('/seminar/create', jsonParser, function (req, res) {
  })
  });*/
 
-router.get('/events/:eid', function (req, res) {
-    var eventId = req.params.eid;
+router.get('/events', function (req, res) {
+    var eventId = req.query.eventid;
     timelineUtil.getEvent(eventId, function (err, result) {
         if (err) {
             res.send(err);
@@ -91,6 +91,15 @@ router.get('/events/:eid', function (req, res) {
         }
     })
 });
+
+router.get('/events/videos', function (req, res) {
+    var userId = req.headers['userId'];
+    var videoId = req.query.videoid;
+    timelineUtil.getEventByVideoId({videoId: videoId}, function (result) {
+        res.send(result);
+    })
+});
+
 router.post('/events/search', jsonParser, function (req, res) {
     var body = req.body;
     var type = req.query.type;

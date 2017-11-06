@@ -18,6 +18,15 @@ router.post('/save', jsonParser, function (req, res) {
 });
 
 router.get('/', function (req, res) {
+    var data = {};
+    data.user = req.params.user;
+    data.videoId = req.query.videoid;
+    qRService.getCompleteInfo(data, function (result) {
+        res.send(result);
+    })
+});
+
+router.get('/questions', function (req, res) {
     var videoId = req.query.videoid;
     var questionId = req.query.questionid;
     if (videoId) {
@@ -49,5 +58,14 @@ router.post('/votecount', jsonParser, function (req, res) {
             res.send(result);
         })
     }
+});
+
+router.get('/topquestion', function (req, res) {
+    var videoId = req.query.videoid;
+    var data = {};
+    data.videoId = videoId;
+    qRService.getTopQuestions(data, function (result) {
+        res.send(result);
+    })
 });
 module.exports = router;

@@ -5,6 +5,7 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 //var bodyParser = require('body-parser');
 var jsonwebtoken = require("jsonwebtoken");
+var uidUtil = require('./lib/userIdUtil');
 
 var cors = require('cors');
 
@@ -92,7 +93,19 @@ app.use(function (req, res, next) {
 });
 
 app.use(function (req, res, next) {
-    next();
+    var userId = req.headers.userid;
+    if(userId) {
+        uidUtil.getUID(userId, function (err, result) {
+            if (err) {
+                res.status(500).send('Error occured while recogninsing user!!!');
+            } else {
+                req.headers.userId = result.uid;
+                next();
+            }
+        });
+    }else{
+        res.status(500).send('user id missing in header');
+    }
     /*var url = req.url;
      if (true) {
      next();
