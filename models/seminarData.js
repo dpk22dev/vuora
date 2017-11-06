@@ -3,7 +3,7 @@ const config = require('config');
 var utils = require('../lib/util');
 const customLogger = require('../config/logger');
 
-// put this value from config
+// put this value from redis
 const perTagLimit = 25;
 /*
  broadcast.id will be used as youtube id for which

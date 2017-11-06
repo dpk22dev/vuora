@@ -12,9 +12,9 @@ var jsonParser = bodyParser.json({type: 'application/json'});
 const seminarModel = require('../models/seminarData');
 const timeLineSrv = require('../lib/timelineService');
 
-var multer  = require('multer')
+var multer  = require('multer');
 const customConfig = require('config');
-const uploadPath = customConfig.get('f2f.uploadsPath')
+const uploadPath = customConfig.get('f2f.uploadsPath');
 
 try {
     var storage = multer.diskStorage({
