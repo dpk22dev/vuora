@@ -21,34 +21,22 @@ router.get('/', function (req, res) {
 router.post('/events/request', jsonParser, function (req, res) {
     var body = req.body;
     var type = req.body.type;
-    timelineUtil.requestEvent(body, type, function (err, result) {
-        if (err) {
-            res.send(err);
-        } else {
-            res.send(result)
-        }
+    timelineUtil.requestEvent(body, type, function (result) {
+        res.send(result)
     });
 });
 
 router.post('/events/accept', jsonParser, function (req, res) {
     var body = req.body;
-    timelineUtil.acceptEvent(body, function (err, result) {
-        if (err) {
-            res.send(err);
-        } else {
-            res.send(result)
-        }
+    timelineUtil.acceptEvent(body, function (result) {
+        res.send(result)
     });
 });
 
 router.post('/events/decline', jsonParser, function (req, res) {
     var body = req.body;
-    timelineUtil.declineEvent(body, function (err, result) {
-        if (err) {
-            res.send(err);
-        } else {
-            res.send(result)
-        }
+    timelineUtil.declineEvent(body, function (result) {
+        res.send(result)
     });
 });
 
@@ -56,12 +44,8 @@ router.post('/seminar/create', jsonParser, function (req, res) {
     req.body.userId = !req.params.userId ? 101 : req.params.userId;
     var body = req.body;
     var type = req.query.type;
-    timelineUtil.createSeminar(body, function (err, result) {
-        if (err) {
-            res.send(err);
-        } else {
-            res.send(result)
-        }
+    timelineUtil.createSeminar(body, function (result) {
+        res.send(result)
     });
 });
 
@@ -83,12 +67,8 @@ router.post('/seminar/create', jsonParser, function (req, res) {
 
 router.get('/events', function (req, res) {
     var eventId = req.query.eventid;
-    timelineUtil.getEvent(eventId, function (err, result) {
-        if (err) {
-            res.send(err);
-        } else {
-            res.send(result);
-        }
+    timelineUtil.getEvent(eventId, function (result) {
+        res.send(result);
     })
 });
 
@@ -103,12 +83,8 @@ router.get('/events/videos', function (req, res) {
 router.post('/events/search', jsonParser, function (req, res) {
     var body = req.body;
     var type = req.query.type;
-    timelineUtil.searchEvent(body, function (err, result) {
-        if (err) {
-            res.send(err);
-        } else {
-            res.send(result)
-        }
-    })
+    timelineUtil.searchEvent(body, function (result) {
+        res.send(result)
+    });
 });
 module.exports = router;

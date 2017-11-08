@@ -3,6 +3,7 @@ var router = express.Router();
 
 const videoModel = require('../models/videoData');
 var customLogger = require('./../config/logger');
+var util = require('./../lib/util');
 
 var bodyParser = require('body-parser');
 var jsonParser = bodyParser.json({type: 'application/json'});
@@ -15,27 +16,25 @@ router.post('/setSocialStatus', jsonParser, function (req, res, next) {
     var vidSocialData = req.body;
     videoModel.updateVideoSocialStatus(vidSocialData).then(
         function (result) {
-            res.send('updated');
+            res.send(util.convertToResponse(null, result, 'Done'));
         }, function (err) {
-            customLogger.log('error while updating' + err);
-            res.send('error while updating');
+            res.send(util.convertToResponse(err, null, 'error while updating'));
         }
     );
 });
 
 router.post('/votes', jsonParser, function (req, res, next) {
     var vidData = req.body;
-    videoModel.getUpvotesForVideoId(vidData, function (err, result) {
+    videoModel.getUpvotesForVideoId(vidData, function (result) {
         if (err) {
-            customLogger.log('error while fetching' + err);
-            res.send('error while fetching');
+            res.send(util.convertToResponse(err, null, 'error while fetching'));
+        } else {
+            var votes = {};
+            result.forEach(function (e) {
+                votes[e._id] = e.count;
+            });
+            res.send(util.convertToResponse(null, votes, ''));
         }
-        var votes = {};
-        result.forEach(function (e) {
-            votes[e._id] = e.count;
-        });
-
-        res.send(votes);
     });
 });
 
@@ -46,8 +45,9 @@ router.get('/show/:videoId', function (req, res, next) {
     seminarModel.getDataForVideoId(inpData).then(function (resolve) {
         /*var html = mustache.render( "videoShow.mustache", resolve );
          res.send( html );*/
+        res.send(util.convertToResponse(null, resolve, ''));
     }, function (reject) {
-        res.send("error occured in videoshow");
+        res.send(util.convertToResponse(reject, null, 'error occured in videoshow'));
     });
 });
 
@@ -57,7 +57,7 @@ router.post('/suggest/recommendation', jsonParser, function (req, res, next) {
 
     // get tags to search from
     var tags = getTagsForRecommendations(recData);
-    _internal( tags, res , processVidsBeforeSendingResultForRecommendationPage );
+    _internal(tags, res, processVidsBeforeSendingResultForRecommendationPage);
 
 });
 
@@ -67,7 +67,7 @@ router.post('/suggest/videoShow', jsonParser, function (req, res, next) {
 
     // get tags to search from
     var tags = getTagsForVidShow(recData);
-    _internal( recData, tags, res , processVidsBeforeSendingResultForVidShowPage  );
+    _internal(recData, tags, res, processVidsBeforeSendingResultForVidShowPage);
 
 });
 
@@ -75,21 +75,21 @@ router.post('/suggest/searchPages', jsonParser, function (req, res, next) {
     //var recData = seminarModel.dummyVideoSearchBackFillApiData;
     var recData = req.body;
 
-    if( recData.query && recData.query.length > 0 ){
-        var data = youtubeApi.youtubeSearchDataCreator( { "q" : recData.query } );
-        youtubeApi.searchVideos( data, function ( err, resolve ) {
-            if( resolve.error ){
-                var error = {"msg": "error in fetching videos for query", "err": resolve.error.err };
+    if (recData.query && recData.query.length > 0) {
+        var data = youtubeApi.youtubeSearchDataCreator({"q": recData.query});
+        youtubeApi.searchVideos(data, function (err, resolve) {
+            if (resolve.error) {
+                var error = {"msg": "error in fetching videos for query", "err": resolve.error.err};
                 res.send({"error": error});
             }
-            res.send( resolve.vidsArr );
-        } )
-        return ;
+            res.send(resolve.vidsArr);
+        })
+        return;
     }
 
     // get tags to search from
     var tags = getTagsForVidShow(recData);
-    _internal( recData, tags, res , processVidsBeforeSendingResultForVidShowPage  );
+    _internal(recData, tags, res, processVidsBeforeSendingResultForVidShowPage);
 
 });
 
@@ -100,7 +100,7 @@ var getTagsForRecommendations = function (data) {
     return data.recentlySearched;
 }
 
-var getTagsForVidShow = function ( data ) {
+var getTagsForVidShow = function (data) {
     //@todo add logic
     return data.recentlySearched;
 }
@@ -109,11 +109,11 @@ var processVidsBeforeSendingResultForRecommendationPage = function (tagObjPair, 
     return tagObjPair;
 }
 
-var processVidsBeforeSendingResultForVidShowPage = function ( tagObjPair, recData ) {
+var processVidsBeforeSendingResultForVidShowPage = function (tagObjPair, recData) {
     return tagObjPair;
 }
 
-var _internal = function ( recData, tags, res, processVidsBeforeSendingResult ) {
+var _internal = function (recData, tags, res, processVidsBeforeSendingResult) {
     // get vids for tags
     seminarModel.fetchVidsForTags(tags).then(function (ok) {
 
@@ -139,16 +139,16 @@ var _internal = function ( recData, tags, res, processVidsBeforeSendingResult ) 
                     }
                 })
 
-                if( semVidArr.length > 0 ) {
+                if (semVidArr.length > 0) {
                     //insert videodata to seminarmodel for these tags,
                     // might need to change structure accordingly
                     seminarModel.insertMultipleVids(semVidArr).then(function (resolve) {
                         // its ok
 
-                        var insertedVidsTagObjPair = seminarModel.getTagObjPairs( resolve.ops );
+                        var insertedVidsTagObjPair = seminarModel.getTagObjPairs(resolve.ops);
                         // data is tagged object with videos,semVidArr is merged array of vids
                         // combination of data and resolve or fetch data from db for remaining tags
-                        tagObjPair = mergeTagVids( tagObjPair, insertedVidsTagObjPair );
+                        tagObjPair = mergeTagVids(tagObjPair, insertedVidsTagObjPair);
                         // prepare result
                         //filter out videos already watched
                         var tagObjPairProcessed = processVidsBeforeSendingResult(tagObjPair, recData);
@@ -179,7 +179,7 @@ var _internal = function ( recData, tags, res, processVidsBeforeSendingResult ) 
     });
 }
 
-var mergeTagVids = function( tobj1, tobj2 ){
+var mergeTagVids = function (tobj1, tobj2) {
     for (var attrname in tobj2) {
         tobj1[attrname] = tobj2[attrname];
     }

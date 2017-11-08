@@ -1,6 +1,7 @@
 var express = require('express');
 var userUtil = require('./../service/user/userService');
 var loginUtil = require('./../lib/login');
+var util = require('./../lib/util');
 var router = express.Router();
 var async = require('async');
 var bodyParser = require('body-parser');
@@ -27,8 +28,7 @@ router.post('/tags', jsonParser, function (req, res, next) {
         tagArr.push(tmpTag);
     });
     async.map(tagArr, setTag, function (err, results) {
-        res.stausCode = 202;
-        res.send();
+        res.send(util.convertToResponse(err, results, 'Error occured while saving tags'));
     });
 });
 

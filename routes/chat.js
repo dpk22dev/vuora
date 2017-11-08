@@ -66,10 +66,4 @@ router.get('/gclbk', function (req, res) {
     });
 });
 
-router.get('/qmap/:vconf', function (req, res) {
-    vconf.getQuestionMap(req.params.vconf, function (err, response) {
-        res.send(response);
-    });
-});
-
 module.exports = router;
