@@ -185,7 +185,7 @@ userUtil.saveCred = function (id, pwd, callback) {
     var mongoDB = mongo.getInstance();
     var collection = mongoDB.collection(USER_CRED);
     collection.insertOne(userCred, function (err, res) {
-        callback(err, res);
+        callback(utils.convertToResponse(err, res, 'Unable to save cred'));
     });
 };
 
@@ -193,7 +193,7 @@ userUtil.getCred = function (id, callback) {
     var mongoDB = mongo.getInstance();
     var collection = mongoDB.collection(USER_CRED);
     collection.findOne({_id: id}, function (err, res) {
-        callback(err, res);
+        callback(utils.convertToResponse(err, res, 'Unable to get cred'));
     })
 };
 
