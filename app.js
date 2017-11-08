@@ -141,8 +141,32 @@ app.use(function (req, res, next) {
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+var whitelist = ['http://local.intelverse.com:9090', 'http://api.intelverse.com', 'http://apis.intelverse.com'];
+/* var corsOptions = {
+ origin: function (origin, callback) {
+ if (whitelist.indexOf(origin) !== -1) {
+ callback(null, true)
+ } else {
+ callback(new Error('Not allowed by CORS'))
+ }
+ },
+ optionsSuccessStatus: 200,
+ credentials: true
+ }*/
 
-app.use(cors());
+var corsOptions = {
+//origin : "http://local.intelverse.com:9090",
+    origin: function (origin, callback) {
+        if (whitelist.indexOf(origin) !== -1) {
+            callback(null, true)
+        } else {
+            callback(new Error('Not allowed by CORS'))
+        }
+    },
+    optionsSuccessStatus: 200,
+    credentials: true
+};
+app.use(cors( corsOptions ));
 
 app.use(logger('dev'));
 // app.use(bodyParser.urlencoded());
