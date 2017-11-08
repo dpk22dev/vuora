@@ -274,11 +274,7 @@ exports.createF2f = function (data, callback) {
 
     var f2fData = new F2fData(data);
     collection.insertOne(f2fData, function (err, result) {
-        if (err) {
-            callback(err, null);
-        } else {
-            callback(null, f2fData);
-        }
+        callback(utils.convertToResponse(err, f2fData, 'unable to create F2F'));
     });
 
 };

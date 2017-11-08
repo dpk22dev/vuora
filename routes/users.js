@@ -1,6 +1,7 @@
 var express = require('express');
 var userUtil = require('./../service/user/userService');
 var loginUtil = require('./../lib/login');
+var util = require('./../lib/util');
 var router = express.Router();
 var async = require('async');
 var bodyParser = require('body-parser');
@@ -27,8 +28,7 @@ router.post('/tags', jsonParser, function (req, res, next) {
         tagArr.push(tmpTag);
     });
     async.map(tagArr, setTag, function (err, results) {
-        res.stausCode = 202;
-        res.send();
+        res.send(util.convertToResponse(err, results, 'Error occured while saving tags'));
     });
 });
 
@@ -95,18 +95,14 @@ router.get('/suggestions/tag', function (req, res, next) {
 
 router.post('/signup', jsonParser, function (req, res) {
     var user = req.body;
-    loginUtil.signUp(user, function (err, response) {
-        if (err) {
-            res.send(err);
-        } else {
-            var token = jsonwebtoken.sign({
-                auth: user,
-                agent: req.headers['user-agent'],
-                exp: Math.floor(new Date().getTime() / 1000) + 7 * 24 * 60 * 60
-            }, config.jwtsecret);
-            res.cookie('user', token, {domain: '.intelverse.com', maxAge: 900000, httpOnly: true});
-            res.send(response);
-        }
+    loginUtil.signUp(user, function (response) {
+        var token = jsonwebtoken.sign({
+            auth: user,
+            agent: req.headers['user-agent'],
+            exp: Math.floor(new Date().getTime() / 1000) + 7 * 24 * 60 * 60
+        }, config.jwtsecret);
+        res.cookie('user', token, {domain: '.intelverse.com', maxAge: 900000, httpOnly: true});
+        res.send(response);
     })
 });
 
@@ -125,23 +121,15 @@ router.post('/signin', jsonParser, function (req, res) {
 
 router.get('/forgotpassword', function (req, res) {
     var id = req.query.id;
-    loginUtil.forgotPassword(id, function (err, result) {
-        if (err) {
-            res.send(err);
-        } else {
-            res.send(result);
-        }
+    loginUtil.forgotPassword(id, function (result) {
+        res.send(result);
     })
 });
 
 router.post('/passwordreset', jsonParser, function (req, res) {
     var user = req.body;
     loginUtil.resetPassword(user.token, user.password, function (err, res) {
-        if (res) {
-            res.send('password reset successfully');
-        } else {
-            res.send(err);
-        }
+        res.send(err);
     })
 });
 
@@ -155,12 +143,7 @@ router.put('/users', jsonParser, function (req, res) {
 router.post('/activity', jsonParser, function (req, res) {
     var data = req.body;
     userUtil.saveUserActivity(data, function (err, result) {
-        if (err) {
-            res.statusCode = 500;
-            res.send(err);
-        } else {
-            res.send();
-        }
+        res.send(util.convertToResponse(err, result, 'Error occured while storing user activity'))
     })
 });
 module.exports = router;
