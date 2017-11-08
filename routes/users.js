@@ -17,7 +17,7 @@ function setTag(tag, callback) {
 
 router.post('/tags', jsonParser, function (req, res, next) {
     var body = req.body;
-    var userId = body.id;
+    var userId = req.headers.userId;
     var tags = body.tags;
     var tagArr = [];
     tags.forEach(function (obj) {
@@ -27,14 +27,14 @@ router.post('/tags', jsonParser, function (req, res, next) {
         tmpTag.rate = obj.rating;
         tagArr.push(tmpTag);
     });
-    async.map(tagArr, setTag, function (err, results) {
-        res.send(util.convertToResponse(err, results, 'Error occured while saving tags'));
+    async.map(tagArr, setTag, function (results) {
+        res.send(results);
     });
 });
 
 router.put('/colleges', jsonParser, function (req, res) {
     var body = req.body;
-    var id = body.id;
+    var id = req.headers.userId;
     var colleges = body.colleges;
     var collArr = [];
     colleges.forEach(function (coll) {
@@ -54,7 +54,8 @@ router.put('/colleges', jsonParser, function (req, res) {
 
 router.put('/orgs', jsonParser, function (req, res) {
     var body = req.body;
-    var id = body.id;
+    var id = req.headers.userId;
+    ;
     var companies = body.companies;
     var orgArr = [];
     companies.forEach(function (company) {
@@ -73,14 +74,14 @@ router.put('/orgs', jsonParser, function (req, res) {
 });
 
 router.get('/tags', function (req, res) {
-    var userId = req.query.id;
+    var userId = req.headers.userId;
     userUtil.getTags(userId, function (result) {
         res.send(result);
     })
 });
 
 router.get('/getuser', function (req, res, next) {
-    var userId = req.query.id;
+    var userId = req.headers.userId;
     userUtil.getUser(userId, function (err, response) {
         res.send(response);
     })
@@ -120,7 +121,7 @@ router.post('/signin', jsonParser, function (req, res) {
 });
 
 router.get('/forgotpassword', function (req, res) {
-    var id = req.query.id;
+    var id = req.headers.userId;
     loginUtil.forgotPassword(id, function (result) {
         res.send(result);
     })

@@ -60,14 +60,14 @@ function updateToElastic(index, type, id, callback) {
                 tags.push(tag);
             }
         });
-        userUtil.getUser(id, function (err, result) {
-            if (result) {
+        userUtil.getUser(id, function (result) {
+            if (result.data) {
                 result.tags = tags;
                 elastic.update(index, type, id, result, function (err, res) {
-                    callback(err, res);
+                    callback(utils.convertToResponse(err, res, 'Unable to update doc in ES'));
                 });
             } else {
-                callback(err, result);
+                callback(result);
             }
         })
     });
@@ -101,11 +101,11 @@ userUtil.setTags = function (id, tag, rating, callback) {
         if (err) {
             callback(utils.convertToResponse(err, res, "Error occured while saving to mongo"));
         } else {
-            updateToElastic(ES_INDEX, ES_USER_TYPE, id, function (err, res) {
-                if (res) {
+            updateToElastic(ES_INDEX, ES_USER_TYPE, id, function (res) {
+                if (res.data) {
                     res = {data: 'Successfully inserted'};
                 }
-                callback(utils.convertToResponse(err, res, "Error occured while saving to elastic"));
+                callback(res);
             });
         }
     });
