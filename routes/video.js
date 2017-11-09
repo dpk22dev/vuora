@@ -26,11 +26,12 @@ router.post('/setSocialStatus', jsonParser, function (req, res, next) {
 router.post('/votes', jsonParser, function (req, res, next) {
     var vidData = req.body;
     videoModel.getUpvotesForVideoId(vidData, function (result) {
-        if (err) {
-            res.send(util.convertToResponse(err, null, 'error while fetching'));
+        if (!result.data) {
+            res.send(result);
         } else {
+            var data = result.data;
             var votes = {};
-            result.forEach(function (e) {
+            data.forEach(function (e) {
                 votes[e._id] = e.count;
             });
             res.send(util.convertToResponse(null, votes, ''));
