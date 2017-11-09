@@ -11,7 +11,7 @@ var jsonParser = bodyParser.json({type: 'application/json'});
 
 //var f2fData = require('../models/f2fData');
 const seminarModel = require('../models/seminarData');
-const timeLineSrv = require('../lib/timelineService');
+const timeLineSrv = require('../lib/eventService');
 
 var multer = require('multer');
 const customConfig = require('config');

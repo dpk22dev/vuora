@@ -3,7 +3,7 @@ var router = express.Router();
 var util = require('./../lib/util');
 var youtubeApi = require('../lib/youtubeApi');
 const seminarModel = require('../models/seminarData');
-var timelineUtil = require('./../lib/timelineService');
+var timelineUtil = require('./../lib/eventService');
 var qRService = require('./../lib/questionRedisService');
 
 var bodyParser = require('body-parser');

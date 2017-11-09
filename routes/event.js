@@ -6,7 +6,7 @@ var express = require('express');
 var router = express.Router();
 var path = require('path');
 var bodyParser = require('body-parser');
-var timelineUtil = require('./../lib/timelineService');
+var timelineUtil = require('./../lib/eventService');
 var jsonParser = bodyParser.json({type: 'application/json'});
 
 router.get('/', function (req, res) {

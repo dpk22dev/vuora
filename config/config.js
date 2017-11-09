@@ -4,11 +4,11 @@
 
 var config = {
     mongo: {
-        host: "localhost",
+        host: "13.58.172.179",
         port: 27017
     },
     redis: {
-        host: "localhost",
+        host: "13.58.172.179",
         port: 6379
     },
     linkedin: {
@@ -24,7 +24,7 @@ var config = {
         file: "app.log"
     },
     es: {
-        host: "localhost",
+        host: "18.221.153.68",
         port: 9200
     },
     jwtsecret:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE1MDc4ODUyOTl9'
