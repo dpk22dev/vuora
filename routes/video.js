@@ -79,11 +79,10 @@ router.post('/suggest/searchPages', jsonParser, function (req, res, next) {
     if (recData.query && recData.query.length > 0) {
         var data = youtubeApi.youtubeSearchDataCreator({"q": recData.query});
         youtubeApi.searchVideos(data, function (err, resolve) {
-            if (resolve.error) {
-                var error = {"msg": "error in fetching videos for query", "err": resolve.error.err};
-                res.send({"error": error});
-            }
-            res.send(resolve.vidsArr);
+            if (resolve.error) {                
+                res.send(util.convertToResponse(resolve.error.err, null, 'error in fetching videos for query'));
+            }            
+            res.send(util.convertToResponse(null, resolve.vidsArr, 'Done'));
         })
         return;
     }
@@ -154,7 +153,7 @@ var _internal = function (recData, tags, res, processVidsBeforeSendingResult) {
                         //filter out videos already watched
                         var tagObjPairProcessed = processVidsBeforeSendingResult(tagObjPair, recData);
                         //return results
-                        res.json(tagObjPairProcessed);
+                        res.json( util.convertToResponse(null, tagObjPairProcessed, 'Done') );
                     }, function (reject) {
                         // its ok, log it
                     });
@@ -162,21 +161,20 @@ var _internal = function (recData, tags, res, processVidsBeforeSendingResult) {
                     // prepare result
                     //filter out videos already watched
                     var tagObjPairProcessed = processVidsBeforeSendingResult(tagObjPair, recData);
-                    //return results
-                    res.json(tagObjPairProcessed);
+                    //return results                    
+                    res.json(util.convertToResponse(null, tagObjPairProcessed, 'Done'));
                 }
             });
         } else {
             // got all videos from db itself
             // create result and return
-            var tagObjPairProcessed = processVidsBeforeSendingResult(tagObjPair, recData);
-            res.json(tagObjPairProcessed);
+            var tagObjPairProcessed = processVidsBeforeSendingResult(tagObjPair, recData);            
+            res.json(util.convertToResponse(null, tagObjPairProcessed, 'Done'));
 
         }
 
-    }, function (err) {
-        var error = {"msg": "error in fetching videos for tags", "err": err};
-        res.send({"error": error});
+    }, function (err) {                
+        res.send(util.convertToResponse(err, null, 'error in fetching videos for tags'));
     });
 }
 
