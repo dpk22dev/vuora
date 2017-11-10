@@ -58,7 +58,7 @@ router.post('/suggest/recommendation', jsonParser, function (req, res, next) {
 
     // get tags to search from
     var tags = getTagsForRecommendations(recData);
-    _internal(tags, res, processVidsBeforeSendingResultForRecommendationPage);
+    _internal(recData, tags, res, processVidsBeforeSendingResultForRecommendationPage);
 
 });
 

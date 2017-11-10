@@ -38,7 +38,6 @@ var chatIo = require('socket.io')(server, {
 var chatIoData = {};
 chatIo.set('authorization', function (handshakeData, cb) {
     console.log('Auth: ', handshakeData._query.userId);
-
     chatIoData.userId = handshakeData._query.userId;
     cb(null, true);
 });
@@ -71,9 +70,10 @@ var notiIo = require('socket.io')(server, {
 });
 var notiIoData = {};
 notiIo.set('authorization', function (handshakeData, cb) {
+    // don't know which way is better; should we verify userid cookie from each request for socket or send userid directly in query
     console.log('Auth: ', handshakeData._query.userId);
-
     notiIoData.userId = handshakeData._query.userId;
+
     cb(null, true);
 });
 var notiSocketObj = require('./lib/notiSocket');
@@ -95,12 +95,14 @@ app.use(function (req, res, next) {
 app.use(function (req, res, next) {
     if (req.url === '/users/signin' || req.url === '/users/signup') {
         next();
-    } else {
+    } else if( req.method != 'OPTIONS' ){
+        //check this only for non css, js, images: these should be cookieless
         var token = req.cookies ? req.cookies.user : null;
         var userId = null;
         if (token) {
             var decoded = jsonwebtoken.verify(token, config.jwtsecret);
-            userId = decoded.auth.emailId || 'aws.user101@gmail.com';
+            //userId = decoded.auth.emailId || 'aws.user101@gmail.com';
+            userId = decoded.auth.id || 'aws.user101@gmail.com';
         } else {
             console.log('JWT token not found still passing....by user aws.user101@gmail.com');
             userId = 'aws.user101@gmail.com';
@@ -113,6 +115,8 @@ app.use(function (req, res, next) {
                 next();
             }
         });
+    } else {
+        next();
     }
     /* var url = req.url;
      if (true) {
@@ -141,7 +145,7 @@ app.use(function (req, res, next) {
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-var whitelist = ['http://local.intelverse.com:9090', 'http://api.intelverse.com', 'http://apis.intelverse.com'];
+var whitelist = ['http://local.intelverse.com:9090', 'http://api.intelverse.com', 'http://apis.intelverse.com', 'http://intelverse.com/', 'http://www.intelverse.com/'];
 /* var corsOptions = {
  origin: function (origin, callback) {
  if (whitelist.indexOf(origin) !== -1) {
