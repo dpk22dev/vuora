@@ -18,7 +18,7 @@ var timeline = require('./routes/event');
 var seminar = require('./routes/seminar');
 var video = require('./routes/video');
 var questions = require('./routes/questions');
-var config = require('./config/config');
+var config = require('config');
 var cookieParser = require('cookie-parser');
 
 var app = express();
@@ -93,19 +93,20 @@ app.use(function (req, res, next) {
 });
 
 app.use(function (req, res, next) {
+
     if (req.url === '/users/signin' || req.url === '/users/signup') {
         next();
-    } else if( req.method != 'OPTIONS' ){
+    } else if (req.method != 'OPTIONS') {
         //check this only for non css, js, images: these should be cookieless
         var token = req.cookies ? req.cookies.user : null;
         var userId = null;
         if (token) {
-            var decoded = jsonwebtoken.verify(token, config.jwtsecret);
+            var decoded = jsonwebtoken.verify(token, config.get(jwtsecret));
             //userId = decoded.auth.emailId || 'aws.user101@gmail.com';
             userId = decoded.auth.id || 'aws.user101@gmail.com';
         } else {
             console.log('JWT token not found still passing....by user aws.user101@gmail.com');
-            userId = 'aws.user101@gmail.com';
+            userId = 'vinaysahuhbti@gmail.com';
         }
         uidUtil.getUID(userId, function (err, result) {
             if (err) {
@@ -170,7 +171,7 @@ var corsOptions = {
     optionsSuccessStatus: 200,
     credentials: true
 };
-app.use(cors( corsOptions ));
+app.use(cors(corsOptions));
 
 app.use(logger('dev'));
 // app.use(bodyParser.urlencoded());

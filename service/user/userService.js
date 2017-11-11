@@ -12,8 +12,9 @@ var USER_COLLECTION = "user";
 var USER_TAG_COLLECTION = "usertag";
 var USER_CRED = "usercred";
 
-function User(id, name, image, organisations, colleges) {
+function User(id, fid, name, image, organisations, colleges) {
     this.userId = id;
+    this.fId = fid;
     this.name = name;
     this.image = image;
     this.organisations = organisations;
@@ -62,8 +63,8 @@ function updateToElastic(index, type, id, callback) {
         });
         userUtil.getUser(id, function (result) {
             if (result.data) {
-                result.tags = tags;
-                elastic.update(index, type, id, result, function (err, res) {
+                result.data.tags = tags;
+                elastic.update(index, type, id, result.data, function (err, res) {
                     callback(utils.convertToResponse(err, res, 'Unable to update doc in ES'));
                 });
             } else {
@@ -74,8 +75,8 @@ function updateToElastic(index, type, id, callback) {
 }
 var userUtil = {};
 
-userUtil.createUser = function (id, name, image, organisations, colleges, callback) {
-    var user = new User(id, name, image, organisations, colleges);
+userUtil.createUser = function (id, fid, name, image, organisations, colleges, callback) {
+    var user = new User(id, fid, name, image, organisations, colleges);
     var mongoDB = mongo.getInstance();
     var collection = mongoDB.collection(USER_COLLECTION);
     collection.insertOne(user, function (err, res) {

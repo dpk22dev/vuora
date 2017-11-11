@@ -54,6 +54,43 @@ router.get('/show/:videoId', function (req, res, next) {
 
 router.post('/suggest/recommendation', jsonParser, function (req, res, next) {
     //var recData = seminarModel.dummyRecommendationPageBackFillApiData;
+    /* var result = {
+     "nodejs": {
+     "vidsArr": [{
+     "_id": "59f6be3713ecc73945f526b4",
+     "broadcast": {
+     "id": "pU9Q6oiQNd0"
+     },
+     "snippet": {
+     "publishedAt": "2014-12-12T18:30:02.000Z",
+     "channelId": "UCVTlvUkGslCV_h-nSAId8Sw",
+     "title": "What is Node.js Exactly? - a beginners introduction to Nodejs"
+     },
+     "videoId": "SkWECVECW",
+     "mid": "",
+     "userId": "",
+     "tag": "nodejs"
+     }]
+     },
+     "mongodb": {
+     "vidsArr": [{
+     "_id": "59f6be3713ecc73945f526b4",
+     "broadcast": {
+     "id": "pU9Q6oiQNd0"
+     },
+     "snippet": {
+     "publishedAt": "2014-12-12T18:30:02.000Z",
+     "channelId": "UCVTlvUkGslCV_h-nSAId8Sw",
+     "title": "What is Node.js Exactly? - a beginners introduction to Nodejs"
+     },
+     "videoId": "SkWECVECW",
+     "mid": "",
+     "userId": "",
+     "tag": "nodejs"
+     }]
+     }
+     };
+     res.send(result);*/
     var recData = req.body;
 
     // get tags to search from
@@ -79,9 +116,9 @@ router.post('/suggest/searchPages', jsonParser, function (req, res, next) {
     if (recData.query && recData.query.length > 0) {
         var data = youtubeApi.youtubeSearchDataCreator({"q": recData.query});
         youtubeApi.searchVideos(data, function (err, resolve) {
-            if (resolve.error) {                
+            if (resolve.error) {
                 res.send(util.convertToResponse(resolve.error.err, null, 'error in fetching videos for query'));
-            }            
+            }
             res.send(util.convertToResponse(null, resolve.vidsArr, 'Done'));
         })
         return;
@@ -153,7 +190,7 @@ var _internal = function (recData, tags, res, processVidsBeforeSendingResult) {
                         //filter out videos already watched
                         var tagObjPairProcessed = processVidsBeforeSendingResult(tagObjPair, recData);
                         //return results
-                        res.json( util.convertToResponse(null, tagObjPairProcessed, 'Done') );
+                        res.json(util.convertToResponse(null, tagObjPairProcessed, 'Done'));
                     }, function (reject) {
                         // its ok, log it
                     });
@@ -168,12 +205,12 @@ var _internal = function (recData, tags, res, processVidsBeforeSendingResult) {
         } else {
             // got all videos from db itself
             // create result and return
-            var tagObjPairProcessed = processVidsBeforeSendingResult(tagObjPair, recData);            
+            var tagObjPairProcessed = processVidsBeforeSendingResult(tagObjPair, recData);
             res.json(util.convertToResponse(null, tagObjPairProcessed, 'Done'));
 
         }
 
-    }, function (err) {                
+    }, function (err) {
         res.send(util.convertToResponse(err, null, 'error in fetching videos for tags'));
     });
 }

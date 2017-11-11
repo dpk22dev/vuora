@@ -5,7 +5,7 @@ var util = require('./../lib/util');
 var router = express.Router();
 var async = require('async');
 var bodyParser = require('body-parser');
-var config = require('./../config/config');
+var config = require('config');
 var jsonwebtoken = require("jsonwebtoken");
 
 var jsonParser = bodyParser.json({type: 'application/json'});
@@ -101,8 +101,8 @@ router.post('/signup', jsonParser, function (req, res) {
             auth: user,
             agent: req.headers['user-agent'],
             exp: Math.floor(new Date().getTime() / 1000) + 7 * 24 * 60 * 60
-        }, config.jwtsecret);
-        res.cookie('user', token, {domain: '.intelverse.com', maxAge: 600000000, httpOnly: true});
+        }, config.get(jwtsecret));
+        res.cookie('user', token, {domain: '.intelverse.com', maxAge: 900000, httpOnly: true});
         res.send(response);
     })
 });
@@ -114,11 +114,13 @@ router.post('/signin', jsonParser, function (req, res) {
             auth: user,
             agent: req.headers['user-agent'],
             exp: Math.floor(new Date().getTime() / 1000) + 7 * 24 * 60 * 60
-        }, config.jwtsecret);
-        res.cookie('user', token, {domain: '.intelverse.com', maxAge: 600000000, httpOnly: true});
+        }, config.get(jwtsecret));
+        res.cookie('user', token, {domain: '.intelverse.com', maxAge: 900000, httpOnly: true});
+        changes
         res.send(response);
     })
-});
+})
+;
 
 router.get('/forgotpassword', function (req, res) {
     var id = req.headers.userId;
