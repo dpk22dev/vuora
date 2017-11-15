@@ -101,8 +101,9 @@ router.post('/signup', jsonParser, function (req, res) {
             auth: user,
             agent: req.headers['user-agent'],
             exp: Math.floor(new Date().getTime() / 1000) + 7 * 24 * 60 * 60
-        }, config.get(jwtsecret));
-        res.cookie('user', token, {domain: '.intelverse.com', maxAge: 900000, httpOnly: true});
+        }, config.get('jwtsecret'));
+        res.cookie('user', token, {domain: '.intelverse.com', maxAge: 900000000, httpOnly: true});
+        res.cookie('userId', user.id, {domain: '.intelverse.com', maxAge: 900000000 });
         res.send(response);
     })
 });
@@ -114,9 +115,9 @@ router.post('/signin', jsonParser, function (req, res) {
             auth: user,
             agent: req.headers['user-agent'],
             exp: Math.floor(new Date().getTime() / 1000) + 7 * 24 * 60 * 60
-        }, config.get(jwtsecret));
-        res.cookie('user', token, {domain: '.intelverse.com', maxAge: 900000, httpOnly: true});
-        changes
+        }, config.get('jwtsecret'));
+        res.cookie('user', token, {domain: '.intelverse.com', maxAge: 900000000, httpOnly: true});
+        res.cookie('userId', user.id, {domain: '.intelverse.com', maxAge: 900000000 });
         res.send(response);
     })
 })

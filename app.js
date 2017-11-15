@@ -101,16 +101,18 @@ app.use(function (req, res, next) {
         var token = req.cookies ? req.cookies.user : null;
         var userId = null;
         if (token) {
-            var decoded = jsonwebtoken.verify(token, config.get(jwtsecret));
+            var decoded = jsonwebtoken.verify(token, config.get('jwtsecret'));
             //userId = decoded.auth.emailId || 'aws.user101@gmail.com';
-            userId = decoded.auth.id || 'aws.user101@gmail.com';
+            userId = decoded.auth.id;
         } else {
-            console.log('JWT token not found still passing....by user aws.user101@gmail.com');
-            userId = 'vinaysahuhbti@gmail.com';
+            console.log('JWT token not found');
+            //console.log('still passing....by user aws.user101@gmail.com');
+            //userId = 'vinaysahuhbti@gmail.com';
+            res.status(404).send('Error occured while recogninsing user!!!');
         }
         uidUtil.getUID(userId, function (err, result) {
             if (err) {
-                res.status(500).send('Error occured while recogninsing user!!!');
+                res.status(404).send('Error occured while recogninsing user!!!');
             } else {
                 req.headers.userId = result.uid;
                 next();
