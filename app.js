@@ -161,19 +161,19 @@ var whitelist = ['http://local.intelverse.com:9090', 'http://api.intelverse.com'
  credentials: true
  }*/
 
-var corsOptions = {
-//origin : "http://local.intelverse.com:9090",
-    origin: function (origin, callback) {
-        if (whitelist.indexOf(origin) !== -1) {
-            callback(null, true)
-        } else {
-            callback(new Error('Not allowed by CORS'))
-        }
-    },
-    optionsSuccessStatus: 200,
-    credentials: true
-};
-app.use(cors(corsOptions));
+/*var corsOptions = {
+ //origin : "http://local.intelverse.com:9090",
+ origin: function (origin, callback) {
+ if (whitelist.indexOf(origin) !== -1) {
+ callback(null, true)
+ } else {
+ callback(new Error('Not allowed by CORS'))
+ }
+ },
+ optionsSuccessStatus: 200,
+ credentials: true
+ };
+ app.use(cors(corsOptions));*/
 
 app.use(logger('dev'));
 // app.use(bodyParser.urlencoded());
@@ -186,7 +186,7 @@ app.use('/users', users);
 app.use('/chat', chat);
 app.use('/selfGoogleAuth', selfGoogleAuth);
 app.use('/seminar', seminar);
-app.use('/timeline', timeline);
+app.use('/event', timeline);
 app.use('/f2f', f2f);
 app.use('/video', video);
 app.use('/questions', questions);
