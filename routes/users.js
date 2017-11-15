@@ -137,9 +137,10 @@ router.post('/passwordreset', jsonParser, function (req, res) {
     })
 });
 
-router.put('/users', jsonParser, function (req, res) {
+router.put('/', jsonParser, function (req, res) {
+    var id = req.headers.userId;
     var user = req.body;
-    userUtil.updateUser(user, function (result) {
+    userUtil.updateUser(id, user, function (result) {
         res.send(result);
     })
 });

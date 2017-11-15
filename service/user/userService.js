@@ -12,10 +12,12 @@ var USER_COLLECTION = "user";
 var USER_TAG_COLLECTION = "usertag";
 var USER_CRED = "usercred";
 
-function User(id, fid, name, image, organisations, colleges) {
+function User(id, fid, name, title, desc, image, organisations, colleges) {
     this.userId = id;
     this.fId = fid;
     this.name = name;
+    this.title = title;
+    this.desc = desc;
     this.image = image;
     this.organisations = organisations;
     this.colleges = colleges;
@@ -76,7 +78,7 @@ function updateToElastic(index, type, id, callback) {
 var userUtil = {};
 
 userUtil.createUser = function (id, fid, name, image, organisations, colleges, callback) {
-    var user = new User(id, fid, name, image, organisations, colleges);
+    var user = new User(id, fid, name, null, null, image, organisations, colleges);
     var mongoDB = mongo.getInstance();
     var collection = mongoDB.collection(USER_COLLECTION);
     collection.insertOne(user, function (err, res) {
@@ -150,12 +152,51 @@ userUtil.setOrganisation = function (id, organisations, callback) {
         });
 };
 
-userUtil.updateUser = function (user, callback) {
+userUtil.updateUser = function (id, user, callback) {
+    var update = {};
+    if (user.organisations) {
+        update.organisations = user.organisations;
+    }
+    if (user.colleges) {
+        update.colleges = user.colleges;
+    }
+    if (user.name) {
+        update.name = user.name;
+    }
+    if (user.image) {
+        update.image = user.image;
+    }
+    if (user.title) {
+        update.title = user.title;
+    }
+    if (user.desc) {
+        update.desc = user.desc;
+    }
+    var mongoDB = mongo.getInstance();
+    var collection = mongoDB.collection(USER_COLLECTION);
+    collection.updateOne({userId: id}
+        , {
+            $set: update
+        }, function (err, result) {
+            if (err) {
+                callback(utils.convertToResponse(err, result, "Error occured while updating result to mongo"))
+            } else {
+                updateToElastic(ES_INDEX, ES_USER_TYPE, id, function (result) {
+                    if (result.data) {
+                        result.data = user;
+                    }
+                    callback(result)
+                });
+            }
+        });
+};
+
+userUtil.updateUserTitleDesc = function (user, callback) {
     collection.updateOne({userId: user.id}
         , {
             $set: {
-                organisations: user.organisations,
-                colleges: user.colleges,
+                title: user.title,
+                desc: user.desc,
                 name: user.name,
                 image: user.image
             }
