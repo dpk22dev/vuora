@@ -104,20 +104,21 @@ app.use(function (req, res, next) {
             var decoded = jsonwebtoken.verify(token, config.get('jwtsecret'));
             //userId = decoded.auth.emailId || 'aws.user101@gmail.com';
             userId = decoded.auth.id;
+            uidUtil.getUID(userId, function (err, result) {
+                if (err) {
+                    res.status(404).send('Error occured while recogninsing user!!!');
+                } else {
+                    req.headers.fId = userId;
+                    req.headers.userId = result.uid;
+                    next();
+                }
+            });
         } else {
             console.log('JWT token not found');
             //console.log('still passing....by user aws.user101@gmail.com');
             //userId = 'vinaysahuhbti@gmail.com';
             res.status(404).send('Error occured while recogninsing user!!!');
         }
-        uidUtil.getUID(userId, function (err, result) {
-            if (err) {
-                res.status(404).send('Error occured while recogninsing user!!!');
-            } else {
-                req.headers.userId = result.uid;
-                next();
-            }
-        });
     } else {
         next();
     }

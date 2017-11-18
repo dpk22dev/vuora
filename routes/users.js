@@ -82,7 +82,7 @@ router.get('/tags', function (req, res) {
 
 router.get('/getuser', function (req, res, next) {
     var userId = req.headers.userId;
-    userUtil.getUser(userId, function (err, response) {
+    userUtil.getUser(userId, function (response) {
         res.send(response);
     })
 });
@@ -96,6 +96,7 @@ router.get('/suggestions/tag', function (req, res, next) {
 
 router.post('/signup', jsonParser, function (req, res) {
     var user = req.body;
+    user.fid = req.headers.fId;
     loginUtil.signUp(user, function (response) {
         var token = jsonwebtoken.sign({
             auth: user,
