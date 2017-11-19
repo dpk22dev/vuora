@@ -162,19 +162,19 @@ var whitelist = ['http://local.intelverse.com:9090', 'http://api.intelverse.com'
  credentials: true
  }*/
 
-/*var corsOptions = {
- //origin : "http://local.intelverse.com:9090",
- origin: function (origin, callback) {
- if (whitelist.indexOf(origin) !== -1) {
- callback(null, true)
- } else {
- callback(new Error('Not allowed by CORS'))
- }
- },
- optionsSuccessStatus: 200,
- credentials: true
- };
- app.use(cors(corsOptions));*/
+var corsOptions = {
+    //origin : "http://local.intelverse.com:9090",
+    origin: function (origin, callback) {
+        if (whitelist.indexOf(origin) !== -1) {
+            callback(null, true)
+        } else {
+            callback(new Error('Not allowed by CORS'))
+        }
+    },
+    optionsSuccessStatus: 200,
+    credentials: true
+};
+app.use(cors(corsOptions));
 
 app.use(logger('dev'));
 // app.use(bodyParser.urlencoded());

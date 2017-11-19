@@ -3,6 +3,7 @@
  */
 var mongo = require('./../../lib/mongo');
 var Long = require('mongodb').Long;
+
 var elastic = require('./../../lib/elasticSearchWrapper');
 var utils = require('./../../lib/util');
 var ES_INDEX = 'vuora';
