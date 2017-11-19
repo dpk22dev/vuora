@@ -55,7 +55,6 @@ router.put('/colleges', jsonParser, function (req, res) {
 router.put('/orgs', jsonParser, function (req, res) {
     var body = req.body;
     var id = req.headers.userId;
-    ;
     var companies = body.companies;
     var orgArr = [];
     companies.forEach(function (company) {

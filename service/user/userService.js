@@ -14,7 +14,7 @@ var USER_TAG_COLLECTION = "usertag";
 var USER_CRED = "usercred";
 
 function User(id, fid, name, title, desc, image, organisations, colleges) {
-    this.userId = id;
+    this.userId = Long.fromNumber(id);
     this.fId = fid;
     this.name = name;
     this.title = title;
@@ -34,7 +34,7 @@ function Organisation(title, company, location, from, to, current) {
 }
 
 function UserCredentials(id, pwd) {
-    this._id = id;
+    this._id = Long.fromNumber(id);
     this.pwd = pwd;
 }
 
@@ -48,12 +48,13 @@ function College(title, degree, tags, grade, from, to) {
 }
 
 function UserTag(id, tag, rating) {
-    this.userId = id;
+    this.userId = Long.fromNumber(id);
     this.tag = tag;
     this.rating = rating;
 }
 
 function updateToElastic(index, type, id, callback) {
+    id = Long.fromNumber(id);
     var mongoDB = mongo.getInstance();
     var collection = mongoDB.collection(USER_TAG_COLLECTION);
     var tags = [];
@@ -79,6 +80,7 @@ function updateToElastic(index, type, id, callback) {
 var userUtil = {};
 
 userUtil.createUser = function (id, fid, name, image, organisations, colleges, callback) {
+    id = Long.fromNumber(id);
     var user = new User(id, fid, name, null, null, image, organisations, colleges);
     var mongoDB = mongo.getInstance();
     var collection = mongoDB.collection(USER_COLLECTION);
@@ -97,6 +99,7 @@ userUtil.createUser = function (id, fid, name, image, organisations, colleges, c
 };
 
 userUtil.setTags = function (id, tag, rating, callback) {
+    id = Long.fromNumber(id);
     rating = rating || 0;
     var userTag = new UserTag(id, tag, rating);
     var mongoDB = mongo.getInstance();
@@ -116,6 +119,7 @@ userUtil.setTags = function (id, tag, rating, callback) {
 };
 
 userUtil.setCollege = function (id, colleges, callback) {
+    id = Long.fromNumber(id);
     var mongoDB = mongo.getInstance();
     var collection = mongoDB.collection(USER_COLLECTION);
     collection.updateOne({userId: id}
@@ -131,6 +135,7 @@ userUtil.setCollege = function (id, colleges, callback) {
 };
 
 userUtil.getTags = function (id, callback) {
+    id = Long.fromNumber(id);
     var mongoDB = mongo.getInstance();
     var collection = mongoDB.collection(USER_TAG_COLLECTION);
     collection.find({userId: id}).toArray(function (err, results) {
@@ -139,6 +144,7 @@ userUtil.getTags = function (id, callback) {
 };
 
 userUtil.setOrganisation = function (id, organisations, callback) {
+    id = Long.fromNumber(id);
     var mongoDB = mongo.getInstance();
     var collection = mongoDB.collection(USER_COLLECTION);
     collection.updateOne({userId: id}
@@ -154,6 +160,7 @@ userUtil.setOrganisation = function (id, organisations, callback) {
 };
 
 userUtil.updateUser = function (id, user, callback) {
+    id = Long.fromNumber(id);
     var update = {};
     if (user.organisations) {
         update.organisations = user.organisations;
@@ -193,6 +200,7 @@ userUtil.updateUser = function (id, user, callback) {
 };
 
 userUtil.updateUserTitleDesc = function (user, callback) {
+    user.id = Long.fromNumber(user.id);
     collection.updateOne({userId: user.id}
         , {
             $set: {
@@ -205,7 +213,7 @@ userUtil.updateUserTitleDesc = function (user, callback) {
             if (err) {
                 callback(utils.convertToResponse(err, result, "Error occured while updating result to mongo"))
             } else {
-                updateToElastic(ES_INDEX, ES_USER_TYPE, user._id, function (err, result) {
+                updateToElastic(ES_INDEX, ES_USER_TYPE, user.id, function (err, result) {
                     if (result) {
                         result = user;
                     }
@@ -216,6 +224,7 @@ userUtil.updateUserTitleDesc = function (user, callback) {
 };
 
 userUtil.getUser = function (id, callback) {
+    id = Long.fromNumber(id);
     var mongoDB = mongo.getInstance();
     var collection = mongoDB.collection(USER_COLLECTION);
     collection.findOne({userId: id}, function (err, res) {
@@ -224,6 +233,7 @@ userUtil.getUser = function (id, callback) {
 };
 
 userUtil.saveCred = function (id, pwd, callback) {
+    id = Long.fromNumber(id);
     var userCred = new UserCredentials(id, pwd);
     var mongoDB = mongo.getInstance();
     var collection = mongoDB.collection(USER_CRED);
@@ -233,9 +243,10 @@ userUtil.saveCred = function (id, pwd, callback) {
 };
 
 userUtil.getCred = function (id, callback) {
+    id = Long.fromNumber(id);
     var mongoDB = mongo.getInstance();
     var collection = mongoDB.collection(USER_CRED);
-    collection.findOne({_id: id}, function (err, res) {
+    collection.findOne({_id: Long.fromNumber(id)}, function (err, res) {
         callback(utils.convertToResponse(err, res, 'Unable to get cred'));
     })
 };

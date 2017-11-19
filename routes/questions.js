@@ -62,9 +62,18 @@ router.post('/votecount', jsonParser, function (req, res) {
 
 router.get('/topquestion', function (req, res) {
     var videoId = req.query.videoid;
+    var count = req.query.n;
     var data = {};
     data.videoId = videoId;
+    data.count = count || 1;
     qRService.getTopQuestions(data, function (result) {
+        res.send(result);
+    })
+});
+
+router.post('/status', jsonParser, function (req, res) {
+    var data = req.body;
+    qRService.status(data, function (result) {
         res.send(result);
     })
 });
