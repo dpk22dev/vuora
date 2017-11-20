@@ -77,6 +77,7 @@ var dummyStreamFetchData = {
 
 }
 
+
 var dummyTransitionData = {
     "userID": "123456",
     "broadcast": {
@@ -209,6 +210,65 @@ exports.createSeminarData = function (data) {
     return semData;
 }
 
+exports.createPreviewTransitionData = function ( data ) {
+    var obj = {
+        "userID": data.userId,
+        "broadcast": {
+            "part": "snippet,status,contentDetails",
+            "id": data.broadcast.id,
+            "broadcastStatus": "testing"
+        }
+    }
+    return obj;
+}
+
+exports.createLiveTransitionData = function ( data ) {
+    var obj = {
+        "userID": data.userId,
+        "broadcast": {
+            "part": "snippet,status,contentDetails",
+            "id": data.broadcast.id,
+            "broadcastStatus": "live"
+        }
+    }
+    return obj;
+}
+
+exports.createBroadcastCompleteTransitionData = function ( data ) {
+    var obj = {
+        "userID": data.userId,
+        "broadcast": {
+            "part": "snippet,status,contentDetails",
+            "id": data.broadcast.id,
+            "broadcastStatus": "complete"
+        }
+    }
+    return obj;
+}
+
+exports.createPreviewData = function ( data ) {
+    var obj = {
+        "userID": data.userId,
+        "broadcast": {
+            "part": "snippet,status,contentDetails",
+            "id": data.broadcast.id,
+            "broadcastStatus": "testing"
+        }
+    }
+}
+
+exports.createStreamStatusData =function ( data ){
+    var obj = {
+        "userID": data.userId,
+        "stream": {
+            "part": "status, id",
+            "id": data.stream.id
+        }
+    }
+    return obj;
+}
+
+
 exports.convertModel2UserData = function (data) {
 
 }
@@ -255,6 +315,15 @@ exports.getSeminar = function (data) {
     var collection = mongoDB.collection(broadcastCol);
 
     var promise = collection.findOne({"broadcast.id": data.id});
+    return promise;
+}
+
+exports.getSeminarByVideoId = function ( data ) {
+    var broadcastCol = config.get("mongodb.broadcastCol");
+    var mongoDB = mongo.getInstance();
+    var collection = mongoDB.collection(broadcastCol);
+
+    var promise = collection.findOne({"videoId": data.videoId});
     return promise;
 }
 
