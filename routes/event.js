@@ -12,7 +12,7 @@ var timelineUtil = require('./../lib/eventService');
 var jsonParser = bodyParser.json({type: 'application/json'});
 
 router.get('/list', function (req, res) {
-    var uid = req.params.userId;
+    var uid = req.headers.userId;
     var from = req.query.from || new Date().getTime();
     var to = req.query.to || new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000).getTime();
     timelineUtil.getEventsByRange(uid, from, to, function (result) {

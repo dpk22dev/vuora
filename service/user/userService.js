@@ -3,7 +3,7 @@
  */
 var mongo = require('./../../lib/mongo');
 var Long = require('mongodb').Long;
-
+var userIdUtil = require('./../../lib/userIdUtil');
 var elastic = require('./../../lib/elasticSearchWrapper');
 var utils = require('./../../lib/util');
 var ES_INDEX = 'vuora';
@@ -12,6 +12,7 @@ var ES_ACTIVITY_TYPE = 'activity';
 var USER_COLLECTION = "user";
 var USER_TAG_COLLECTION = "usertag";
 var USER_CRED = "usercred";
+var FOLLOWS = "follows";
 
 function User(id, fid, name, title, desc, image, organisations, colleges) {
     this.userId = Long.fromNumber(id);
@@ -51,6 +52,11 @@ function UserTag(id, tag, rating) {
     this.userId = Long.fromNumber(id);
     this.tag = tag;
     this.rating = rating;
+}
+
+function Follows(primary, secondry) {
+    this.primary = primary;
+    this.secondry = secondry;
 }
 
 function updateToElastic(index, type, id, callback) {
@@ -288,6 +294,24 @@ userUtil.getTagSuggestion = function (tag, callback) {
         callback(utils.convertToResponse(err, data, "Error occured while getting tag"));
     })
 };
+
+userUtil.follows = function (data, callback) {
+    var primary = data.primary;
+    var secondry = data.secondry;
+    var mongoDB = mongo.getInstance();
+    var collection = mongoDB.collection(FOLLOWS);
+    if (primary && secondry) {
+        userIdUtil.getUIDArray([primary, secondry], function (err, result) {
+            var follow = new Follows(result[primary], result[secondry]);
+            collection.insertOne(follow, function (err, result) {
+                callback(utils.convertToResponse(err, follow, 'Error occured while saving it to mongoDB'));
+            })
+        })
+    } else {
+        callback(utils.convertToResponse({err: "provided ids aren't correct"}, null, "provided ids aren't correct"));
+    }
+};
+
 module.exports = userUtil;
 
 

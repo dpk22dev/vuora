@@ -103,7 +103,7 @@ router.post('/signup', jsonParser, function (req, res) {
             exp: Math.floor(new Date().getTime() / 1000) + 7 * 24 * 60 * 60
         }, config.get('jwtsecret'));
         res.cookie('user', token, {domain: '.intelverse.com', maxAge: 900000000, httpOnly: true});
-        res.cookie('userId', user.id, {domain: '.intelverse.com', maxAge: 900000000 });
+        res.cookie('userId', user.id, {domain: '.intelverse.com', maxAge: 900000000});
         res.send(response);
     })
 });
@@ -117,7 +117,7 @@ router.post('/signin', jsonParser, function (req, res) {
             exp: Math.floor(new Date().getTime() / 1000) + 7 * 24 * 60 * 60
         }, config.get('jwtsecret'));
         res.cookie('user', token, {domain: '.intelverse.com', maxAge: 900000000, httpOnly: true});
-        res.cookie('userId', user.id, {domain: '.intelverse.com', maxAge: 900000000 });
+        res.cookie('userId', user.id, {domain: '.intelverse.com', maxAge: 900000000});
         res.send(response);
     })
 })
@@ -149,6 +149,13 @@ router.post('/activity', jsonParser, function (req, res) {
     var data = req.body;
     userUtil.saveUserActivity(data, function (err, result) {
         res.send(util.convertToResponse(err, result, 'Error occured while storing user activity'))
+    })
+});
+
+router.post('/follows', jsonParser, function (req, res) {
+    var data = req.body;
+    userUtil.follows(data, function (result) {
+        res.send(result);
     })
 });
 module.exports = router;

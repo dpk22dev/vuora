@@ -52,47 +52,8 @@ router.get('/show/:videoId', function (req, res, next) {
     });
 });
 
-router.post('/suggest/recommendation', jsonParser, function (req, res, next) {
-    //var recData = seminarModel.dummyRecommendationPageBackFillApiData;
-    /* var result = {
-     "nodejs": {
-     "vidsArr": [{
-     "_id": "59f6be3713ecc73945f526b4",
-     "broadcast": {
-     "id": "pU9Q6oiQNd0"
-     },
-     "snippet": {
-     "publishedAt": "2014-12-12T18:30:02.000Z",
-     "channelId": "UCVTlvUkGslCV_h-nSAId8Sw",
-     "title": "What is Node.js Exactly? - a beginners introduction to Nodejs"
-     },
-     "videoId": "SkWECVECW",
-     "mid": "",
-     "userId": "",
-     "tag": "nodejs"
-     }]
-     },
-     "mongodb": {
-     "vidsArr": [{
-     "_id": "59f6be3713ecc73945f526b4",
-     "broadcast": {
-     "id": "pU9Q6oiQNd0"
-     },
-     "snippet": {
-     "publishedAt": "2014-12-12T18:30:02.000Z",
-     "channelId": "UCVTlvUkGslCV_h-nSAId8Sw",
-     "title": "What is Node.js Exactly? - a beginners introduction to Nodejs"
-     },
-     "videoId": "SkWECVECW",
-     "mid": "",
-     "userId": "",
-     "tag": "nodejs"
-     }]
-     }
-     };
-     res.send(result);*/
+router.post('/suggest/unauth/recommendation', jsonParser, function (req, res, next) {
     var recData = req.body;
-
     // get tags to search from
     var tags = getTagsForRecommendations(recData);
     _internal(recData, tags, res, processVidsBeforeSendingResultForRecommendationPage);
