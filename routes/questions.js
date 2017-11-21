@@ -12,6 +12,7 @@ var qRService = require('./../lib/questionRedisService');
 
 router.post('/save', jsonParser, function (req, res) {
     var body = req.body;
+    body.user = req.params.user;
     qRService.save(body, function (result) {
         res.send(result);
     })
