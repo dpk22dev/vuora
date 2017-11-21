@@ -12,7 +12,8 @@ var qRService = require('./../lib/questionRedisService');
 
 router.post('/save', jsonParser, function (req, res) {
     var body = req.body;
-    body.user = req.params.user;
+    var userId = req.headers.userId;
+    body.user = userId;
     qRService.save(body, function (result) {
         res.send(result);
     })
@@ -20,7 +21,8 @@ router.post('/save', jsonParser, function (req, res) {
 
 router.get('/', function (req, res) {
     var data = {};
-    data.user = req.params.user;
+    var userId = req.headers.userId;
+    data.user = userId;
     data.videoId = req.query.videoid;
     qRService.getCompleteInfo(data, function (result) {
         res.send(result);
