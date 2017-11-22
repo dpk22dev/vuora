@@ -32,6 +32,16 @@ router.post('/tags', jsonParser, function (req, res, next) {
     });
 });
 
+router.post('/search', jsonParser, function (req, res) {
+    var body = req.body;
+    var tags = body.tags || [];
+    var page = body.page;
+    var type = body.type;
+
+    userUtil.search(body, function (result) {
+        res.send(result);
+    })
+});
 router.put('/colleges', jsonParser, function (req, res) {
     var body = req.body;
     var id = req.headers.userId;

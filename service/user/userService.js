@@ -83,6 +83,44 @@ function updateToElastic(index, type, id, callback) {
         })
     });
 }
+
+function getUserByTags(data, sort, callback) {
+    var page = data.page || 1;
+    var mongoDB = mongo.getInstance();
+    var collection = mongoDB.collection(USER_TAG_COLLECTION);
+    collection.find({tags: data.tag}).sort({rating: sort}).skip(page).limit(10).toArray(function (err, results) {
+        if (results) {
+            var uids = [];
+            results.forEach(function (result) {
+                uids.push(result.userId);
+            });
+            async.map(uids, userUtil.getUser, callback);
+        } else {
+            callback(utils.convertToResponse(err, results, 'Error occured while getting response from DB'));
+        }
+    });
+}
+
+function getRelUserByTags(data, callback) {
+    var dev = data.page || 1;
+    var rate = data.rate || 5;
+    var min = (rate - dev) >= 0 ? (rate - dev) : 0;
+    var max = (rate + dev) <= 10 ? (rate + dev) : 10;
+    var mongoDB = mongo.getInstance();
+    var collection = mongoDB.collection(USER_TAG_COLLECTION);
+    collection.find({$and: [{"$gte": min}, {"$lte": max}]}).toArray(function (err, results) {
+        if (results) {
+            var uids = [];
+            results.forEach(function (result) {
+                uids.push(result.userId);
+            });
+            async.map(uids, userUtil.getUser, callback);
+        } else {
+            callback(utils.convertToResponse(err, results, 'Error occured while getting response from DB'));
+        }
+    })
+}
+
 var userUtil = {};
 
 userUtil.createUser = function (id, fid, name, image, organisations, colleges, callback) {
@@ -312,6 +350,26 @@ userUtil.follows = function (data, callback) {
     }
 };
 
+userUtil.search = function (data, callback) {
+    var tags = data.tags;
+    var page = data.page;
+    var type = data.type;
+
+    switch (type) {
+        case "asc": {
+            getUserByTags(data, 1, callback);
+            break;
+        }
+        case "desc": {
+            getUserByTags(data, -1, callback);
+            break;
+        }
+        case "rel": {
+            getRelUserByTags(data, callback);
+            break;
+        }
+    }
+};
 module.exports = userUtil;
 
 

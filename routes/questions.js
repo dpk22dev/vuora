@@ -43,6 +43,19 @@ router.get('/questions', function (req, res) {
     }
 });
 
+router.get('/questionbytag', function (req, res) {
+    var page = req.query.page;
+    var tags = req.query.tags;
+    var limit = req.query.limit;
+    var tagsArr = tags.split(",");
+    var data = {};
+    data.page = page;
+    data.tags = tagsArr;
+    data.limit = limit;
+    qService.getQuestionByTag(data, function (result) {
+        res.send(result);
+    })
+});
 router.post('/vote', jsonParser, function (req, res) {
     var data = req.body;
     qRService.vote(data, function (result) {
