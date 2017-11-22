@@ -102,3 +102,4 @@ http://mongodb.github.io/node-mongodb-native/2.2/api/
 
 
 webpack-dev-server --host 0.0.0.0 --port 80
+./node_modules/webpack-dev-server/bin/webpack-dev-server.js  --no-inline

@@ -49,19 +49,18 @@ router.post('/create', jsonParser, function (req, res, next) {
 
 
 router.post('/stream/status', jsonParser, function (req, res, next) {
-    var streamData = seminarModel.dummyStreamFetchData;
+    var streamData = seminarModel.createStreamStatusData();
     youtubeApi.getStreamStatus(streamData, function (result) {
         res.send(result);
     });
 });
 
-module.exports = router;
-
 router.post('/preview', jsonParser, function (req, res, next) {
     //assuming stream status check was sucesful
-    //var seminarData = req.body;
-    var streamData = seminarModel.dummyTransitionData;
-    streamData.broadcast.broadcastStatus = 'testing';
+    var streamData = seminarModel.createPreviewTransitionData( req.body );
+    //var streamData = seminarModel.dummyTransitionData;
+    //streamData.broadcast.broadcastStatus = 'testing';
+
     /*
      var data = {};
      data.id = streamData.broadcast.id;
@@ -89,8 +88,10 @@ router.post('/preview', jsonParser, function (req, res, next) {
 router.post('/live', jsonParser, function (req, res, next) {
     //assuming stream status check was sucesful, preview was successful
     //var seminarData = req.body;
-    var streamData = seminarModel.dummyTransitionData;
-    streamData.broadcast.broadcastStatus = 'live';
+    //var streamData = seminarModel.dummyTransitionData;
+    //streamData.broadcast.broadcastStatus = 'live';
+
+    var streamData = seminarModel.createLiveTransitionData( req.body );
 
     youtubeApi.setTransition(streamData, function (result) {
         if (!result.data) {
@@ -109,9 +110,11 @@ router.post('/live', jsonParser, function (req, res, next) {
 router.post('/complete', jsonParser, function (req, res, next) {
     //assuming stream status check was sucesful, preview was successful
     //var streamData = req.body;
-    var streamData = seminarModel.dummyTransitionData;
-    streamData.broadcast.broadcastStatus = 'complete';
-
+    //var streamData = seminarModel.dummyTransitionData;
+    //streamData.broadcast.broadcastStatus = 'complete';
+    
+    var streamData = seminarModel.createBroadcastCompleteTransitionData( req.body );
+    
     youtubeApi.setTransition(streamData, function (result) {
         if (!result.data) {
             res.send(result);
@@ -143,6 +146,17 @@ router.get('/:broadCastId', function (req, res, next) {
     var data = {};
     data.id = req.params.broadCastId;
     seminarModel.getSeminar(data).then(function (ok) {
+        res.send(util.convertToResponse(null, ok, ''));
+    }, function (err) {
+        res.send(util.convertToResponse(err, null, 'unable to get seminar with this id'))
+    });
+});
+
+// get seminar info based on videodid
+router.get('/', function (req, res, next) {
+    var data = {};
+    data.videoId = req.query.videoId;
+    seminarModel.getSeminarByVideoId(data).then(function (ok) {
         res.send(util.convertToResponse(null, ok, ''));
     }, function (err) {
         res.send(util.convertToResponse(err, null, 'unable to get seminar with this id'))
