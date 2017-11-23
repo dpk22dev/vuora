@@ -90,7 +90,9 @@ router.get('/tags', function (req, res) {
 });
 
 router.get('/getuser', function (req, res, next) {
-    var userId = req.headers.userId;
+    var passUser = req.query.id;
+    var userId = passUser || req.headers.userId;
+
     userUtil.getUser(userId, function (response) {
         res.send(response);
     })
