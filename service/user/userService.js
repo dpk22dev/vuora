@@ -72,6 +72,7 @@ function updateToElastic(index, type, id, callback) {
             }
         });
         userUtil.getUser(id, function (result) {
+            id = "" + id;
             if (result.data) {
                 result.data.tags = tags;
                 elastic.update(index, type, id, result.data, function (err, res) {

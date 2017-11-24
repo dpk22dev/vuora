@@ -1,6 +1,7 @@
 var express = require('express');
 var userUtil = require('./../service/user/userService');
 var loginUtil = require('./../lib/login');
+var userIdUtil = require('./../lib/userIdUtil');
 var util = require('./../lib/util');
 var router = express.Router();
 var async = require('async');
@@ -170,4 +171,13 @@ router.post('/follows', jsonParser, function (req, res) {
         res.send(result);
     })
 });
+
+router.get('/unauth/getuid', function (req, res) {
+    var ids = req.query.ids;
+    var idArr = ids.split(",");
+    userIdUtil.getUIDArray(idArr, function (err, result) {
+        res.send(util.convertToResponse(err, result, 'Error occured while getting uids'));
+    })
+});
+
 module.exports = router;
