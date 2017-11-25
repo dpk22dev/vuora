@@ -52,7 +52,7 @@ router.post('/decline', jsonParser, function (req, res) {
 router.post('/seminar/create', jsonParser, function (req, res) {
     var body = req.body;
     var type = req.query.type;
-    req.body.userId = !req.params.userId ? 101 : req.params.userId;
+    req.body.userId = req.headers.userId;
     uidUtil.getUIDArray([body.requestee], function (err, result) {
         body.requestee = Long.fromNumber(result[body.requestee]);
         timelineUtil.createSeminar(body, function (result) {

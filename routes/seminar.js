@@ -49,7 +49,10 @@ router.post('/create', jsonParser, function (req, res, next) {
 
 
 router.post('/stream/status', jsonParser, function (req, res, next) {
-    var streamData = seminarModel.createStreamStatusData();
+    var data = req.body;
+    data.userId = req.headers.userId;
+
+    var streamData = seminarModel.createStreamStatusData(data);
     youtubeApi.getStreamStatus(streamData, function (result) {
         res.send(result);
     });
