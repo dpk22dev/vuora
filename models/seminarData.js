@@ -262,7 +262,7 @@ exports.createStreamStatusData =function ( data ){
         "userID": data.userId,
         "stream": {
             "part": "status, id",
-            "id": data.broadcast.id
+            "id": data.stream.id
         }
     }
     return obj;
