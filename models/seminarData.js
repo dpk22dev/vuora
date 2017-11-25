@@ -292,7 +292,7 @@ exports.updateBindings = function (data) {
     var collection = mongoDB.collection(broadcastCol);
 
     var promise = collection.updateOne({"broadcast.id": data.id}
-        , {$set: {"binding.status.lifeCycleStatus": data.result.status.lifeCycleStatus}});
+        , {$set: {"binding.status.lifeCycleStatus": data.status.lifeCycleStatus}});
     return promise;
 
 };

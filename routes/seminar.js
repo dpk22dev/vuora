@@ -71,15 +71,15 @@ router.post('/preview', jsonParser, function (req, res, next) {
      data.status.lifeCycleStatus  = streamData.broadcast.broadcastStatus;
      seminarModel.updateBindings( data, function(){} );*/
 
-    youtubeApi.setTransition(streamData, function (result) {
-            if (!result.data) {
-                res.send(result);
+    youtubeApi.setTransition(streamData, function (err, result) {
+            if ( err ) {
+                res.send( util.convertToResponse(err, null, 'error while transitioning preview state on youtube') );
             } else {
                 //@todo save to db after binding
                 //streamData.updateBindings();
 
-                seminarModel.updateBindings(result.data).then(function (ok) {
-                    res.send(result);
+                seminarModel.updateBindings(result.result).then(function (ok) {
+                    res.send(result.result);
                 }, function (err) {
                     res.send(util.convertToResponse(err, null, 'error while inserting in mongo'));
                 });
@@ -96,16 +96,16 @@ router.post('/live', jsonParser, function (req, res, next) {
 
     var streamData = seminarModel.createLiveTransitionData( req.body );
 
-    youtubeApi.setTransition(streamData, function (result) {
-        if (!result.data) {
-            res.send(result);
+    youtubeApi.setTransition(streamData, function (err, result) {
+        if ( err ) {
+            res.send( util.convertToResponse(err, null, 'error while transitioning live state on youtube') );
+        } else {
+            seminarModel.updateBindings(result.result).then(function (ok) {
+                res.send(result.result)
+            }, function (err) {
+                res.send(util.convertToResponse(err, null, 'error while inserting in mongo'));
+            });
         }
-        seminarModel.updateBindings(data).then(function (ok) {
-            res.send(result)
-        }, function (err) {
-            res.send(util.convertToResponse(err, null, 'error while inserting in mongo'));
-        });
-
 
     });
 });
@@ -118,12 +118,12 @@ router.post('/complete', jsonParser, function (req, res, next) {
     
     var streamData = seminarModel.createBroadcastCompleteTransitionData( req.body );
     
-    youtubeApi.setTransition(streamData, function (result) {
-        if (!result.data) {
-            res.send(result);
+    youtubeApi.setTransition(streamData, function (err, result) {
+        if ( err ) {
+            res.send( util.convertToResponse(err, null, 'error while transitioning complete state on youtube') );
         } else {
-            seminarModel.updateBindings(data).then(function (ok) {
-                res.json(result);
+            seminarModel.updateBindings(result.result).then(function (ok) {
+                res.send(result.result);
             }, function (err) {
                 res.send(util.convertToResponse(err, null, 'error while inserting in mongo'));
             });
