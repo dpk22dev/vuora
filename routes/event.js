@@ -53,9 +53,10 @@ router.post('/seminar/create', jsonParser, function (req, res) {
     var body = req.body;
     var type = req.query.type;
     var userId = req.headers.userId;
+    body.userId = userId;
 
     var data = {};
-    data.user = body.userId;
+    data.user = userId;
     data.from = new Date(body.bStartDateTime).getTime();
     data.to = new Date(body.bEndDateTime).getTime();
 
