@@ -52,12 +52,27 @@ router.post('/decline', jsonParser, function (req, res) {
 router.post('/seminar/create', jsonParser, function (req, res) {
     var body = req.body;
     var type = req.query.type;
-    req.body.userId = req.headers.userId;
+    var userId = req.headers.userId;
+
+    var data = {};
+    data.user = body.userId;
+    data.from = new Date(body.bStartDateTime).getTime();
+    data.to = new Date(body.bEndDateTime).getTime();
+
+    timelineUtil.isConflict(data, function (result) {
+        if (result.data && !result.data.conflict) {
+            body.requestee = Long.fromNumber(userId);
+            timelineUtil.createSeminar(body, function (seminarResult) {
+                res.send(seminarResult);
+            });
+        } else {
+            res.send(result);
+        }
+    });
+
+
     uidUtil.getUIDArray([body.requestee], function (err, result) {
-        body.requestee = Long.fromNumber(result[body.requestee]);
-        timelineUtil.createSeminar(body, function (result) {
-            res.send(result)
-        });
+
     });
 });
 
@@ -97,6 +112,15 @@ router.post('/search', jsonParser, function (req, res) {
     var type = req.query.type;
     timelineUtil.searchEvent(body, function (result) {
         res.send(result)
+    });
+});
+
+router.post('/conflict', jsonParser, function (req, res) {
+    var uid = req.headers.userId;
+    var body = req.body;
+    body.user = uid;
+    timelineUtil.isConflict(body, function (result) {
+        res.send(result);
     });
 });
 module.exports = router;
