@@ -124,4 +124,13 @@ router.post('/conflict', jsonParser, function (req, res) {
         res.send(result);
     });
 });
+
+router.get('/close/seminar', function (req, res) {
+    var data = {};
+    data.eventId = req.query.id;
+    timelineUtil.endSeminar(data, function (result) {
+        res.send(result);
+    })
+});
+
 module.exports = router;

@@ -324,27 +324,44 @@ function getTagSuggestionLocal(tag, callback) {
 
 function getTagSuggestionStack(tag, callback) {
     var tags = [];
-    var url = 'https://stackoverflow.com/filter/tags?q=' + tag + '&newstyle=true&_=' + new Date().getTime();
-    utils.get(url, function (err, results) {
-        if (results) {
-            var res = JSON.parse(results);
-            res.forEach(function (result) {
-                tags.push(result.Name);
-            })
-        }
-        callback(err, tags);
-    })
+    /* var url = 'https://stackoverflow.com/filter/tags?q=' + tag + '&newstyle=true&_=' + new Date().getTime();
+     utils.get(url, function (err, results) {
+     if (results) {
+     var res = JSON.parse(results);
+     res.forEach(function (result) {
+     tags.push(result.Name);
+     })
+     }
+     callback(err, tags);
+     })*/
+    callback(null, [])
 }
 userUtil.getTagSuggestion = function (tag, callback) {
     var tagSuggestion = [];
     async.parallel([getTagSuggestionLocal.bind(null, tag),
         getTagSuggestionStack.bind(null, tag)], function (err, results) {
         if (results) {
-            var localResponse = results[0];
-            var stackResponse = results[1];
-            tagSuggestion = localResponse.concat(stackResponse);
+            var localResponse = results[0] ? results[0] : [];
+            var stackResponse = results[1] ? results[1] : [];
+            var tmp = localResponse.concat(stackResponse);
+            tmp.forEach(function (skill) {
+                if (tagSuggestion.indexOf(skill) == -1) {
+                    tagSuggestion.push(skill);
+                }
+            })
         }
         callback(utils.convertToResponse(err, tagSuggestion, 'Error occured while getting suggestion'));
+    })
+};
+userUtil.isFollows = function (follower, follows, callback) {
+    var mongoDB = mongo.getInstance();
+    var collection = mongoDB.collection(FOLLOWS);
+    collection.findOne({follower: follower, follows: follows}, function (err, result) {
+        var flw = false;
+        if (result) {
+            flw = true;
+        }
+        callback(utils.convertToResponse(err, {follows: flw}, 'Error occured getting status from mongoDB'));
     })
 };
 

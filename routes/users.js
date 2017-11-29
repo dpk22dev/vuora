@@ -165,6 +165,14 @@ router.post('/activity', jsonParser, function (req, res) {
     })
 });
 
+router.get('/isfollows', function (req, res) {
+    var follows = req.query.id;
+    var follower = req.headers.userId;
+    userUtil.isFollows(follower, follows, function (result) {
+        res.send(result);
+    })
+});
+
 router.get('/follows', function (req, res) {
     var follows = req.query.id;
     var follower = req.headers.userId;
