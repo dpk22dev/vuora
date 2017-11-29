@@ -165,9 +165,18 @@ router.post('/activity', jsonParser, function (req, res) {
     })
 });
 
-router.post('/follows', jsonParser, function (req, res) {
-    var data = req.body;
-    userUtil.follows(data, function (result) {
+router.get('/follows', function (req, res) {
+    var follows = req.query.id;
+    var follower = req.headers.userId;
+    userUtil.follows(follower, follows, function (result) {
+        res.send(result);
+    })
+});
+
+router.get('/unfollows', function (req, res) {
+    var follows = req.query.id;
+    var follower = req.headers.userId;
+    userUtil.unfollows(follower, follows, function (result) {
         res.send(result);
     })
 });

@@ -55,8 +55,8 @@ function UserTag(id, tag, rating) {
 }
 
 function Follows(primary, secondry) {
-    this.primary = primary;
-    this.secondry = secondry;
+    this.follower = primary;
+    this.follows = secondry;
 }
 
 function updateToElastic(index, type, id, callback) {
@@ -334,21 +334,25 @@ userUtil.getTagSuggestion = function (tag, callback) {
     })
 };
 
-userUtil.follows = function (data, callback) {
-    var primary = data.primary;
-    var secondry = data.secondry;
+userUtil.follows = function (follower, follows, callback) {
     var mongoDB = mongo.getInstance();
     var collection = mongoDB.collection(FOLLOWS);
-    if (primary && secondry) {
-        userIdUtil.getUIDArray([primary, secondry], function (err, result) {
-            var follow = new Follows(result[primary], result[secondry]);
-            collection.insertOne(follow, function (err, result) {
-                callback(utils.convertToResponse(err, follow, 'Error occured while saving it to mongoDB'));
-            })
-        })
-    } else {
-        callback(utils.convertToResponse({err: "provided ids aren't correct"}, null, "provided ids aren't correct"));
-    }
+    var follow = new Follows(follower, follows);
+    collection.insertOne(follow, function (err, result) {
+        callback(utils.convertToResponse(err, follow, 'Error occured while saving it to mongoDB'));
+    })
+};
+
+userUtil.unfollows = function (follower, follows, callback) {
+    var mongoDB = mongo.getInstance();
+    var collection = mongoDB.collection(FOLLOWS);
+    collection.deleteOne({follower: follower, follows: follows}, function (err, result) {
+        if (result && result.deletedCount == 1) {
+            callback(utils.convertToResponse(err, {status: 'successfully unfollowed'}, 'Error occured while saving it to mongoDB'));
+        } else {
+            callback(utils.convertToResponse(err, {status: follower + ' user was not following ' + follows}, 'Error occured while saving it to mongoDB'));
+        }
+    })
 };
 
 userUtil.search = function (data, callback) {
