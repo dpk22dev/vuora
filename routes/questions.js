@@ -88,7 +88,9 @@ router.get('/topquestion', function (req, res) {
 });
 
 router.post('/status', jsonParser, function (req, res) {
+    var userId = req.headers.userId;
     var data = req.body;
+    data.user = userId;
     qRService.status(data, function (result) {
         res.send(result);
     })

@@ -2,6 +2,7 @@
  * Created by vinay.sahu on 10/7/17.
  */
 var mongo = require('./../../lib/mongo');
+var async = require('async');
 var Long = require('mongodb').Long;
 var userIdUtil = require('./../../lib/userIdUtil');
 var elastic = require('./../../lib/elasticSearchWrapper');
@@ -11,6 +12,7 @@ var ES_USER_TYPE = 'users';
 var ES_ACTIVITY_TYPE = 'activity';
 var USER_COLLECTION = "user";
 var USER_TAG_COLLECTION = "usertag";
+var USER_SKILL_TYPE = "skills";
 var USER_CRED = "usercred";
 var FOLLOWS = "follows";
 
@@ -300,37 +302,49 @@ userUtil.saveUserActivity = function (data, callback) {
     elastic.index(ES_INDEX, ES_ACTIVITY_TYPE, data, callback);
 };
 
-/*userUtil.getTagSuggestion = function (tag, callback) {
- var query =
- {
- "query": {
- "regexp": {
- "name": {
- "value": tag,
- "flags": "INTERSECTION|COMPLEMENT|EMPTY"
- }
- }
- }
- };
- elastic.search(ES_INDEX, ES_USER_TYPE, query, function (err, res) {
- var suggestions = [];
- if (res) {
- if (res) {
- res.forEach(function (obj) {
- var suggestion = {};
- suggestion.val = obj._source.name;
- suggestions.push(suggestion);
- })
- }
- }
- callback(err, suggestions);
- })
- };*/
+function getTagSuggestionLocal(tag, callback) {
+    var query =
+        {
+            "query": {
+                "wildcard": {"skill": "*" + tag + "*"}
+            }
+        };
+    elastic.search(ES_INDEX, USER_SKILL_TYPE, query, function (err, res) {
+        var suggestions = [];
+        if (res) {
+            if (res) {
+                res.forEach(function (obj) {
+                    suggestions.push(obj._source.skill);
+                })
+            }
+        }
+        callback(err, suggestions);
+    })
+};
 
-userUtil.getTagSuggestion = function (tag, callback) {
+function getTagSuggestionStack(tag, callback) {
+    var tags = [];
     var url = 'https://stackoverflow.com/filter/tags?q=' + tag + '&newstyle=true&_=' + new Date().getTime();
-    utils.get(url, function (err, data) {
-        callback(utils.convertToResponse(err, data, "Error occured while getting tag"));
+    utils.get(url, function (err, results) {
+        if (results) {
+            var res = JSON.parse(results);
+            res.forEach(function (result) {
+                tags.push(result.Name);
+            })
+        }
+        callback(err, tags);
+    })
+}
+userUtil.getTagSuggestion = function (tag, callback) {
+    var tagSuggestion = [];
+    async.parallel([getTagSuggestionLocal.bind(null, tag),
+        getTagSuggestionStack.bind(null, tag)], function (err, results) {
+        if (results) {
+            var localResponse = results[0];
+            var stackResponse = results[1];
+            tagSuggestion = localResponse.concat(stackResponse);
+        }
+        callback(utils.convertToResponse(err, tagSuggestion, 'Error occured while getting suggestion'));
     })
 };
 
