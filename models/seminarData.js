@@ -204,7 +204,7 @@ exports.createSeminarData = function (data) {
         semData.videoId = utils.getId();
     }
     if (!semData.url) {
-        semData.url = "video/show/" + semData.videoId;
+        semData.url = "videoshow/" + semData.videoId;
     }
 
     return semData;

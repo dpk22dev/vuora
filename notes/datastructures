@@ -1,0 +1,6 @@
+redis
+user_socket_map
+sem_members_{videoId}
+
+mongo
+elastic
