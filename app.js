@@ -94,7 +94,7 @@ app.use(function (req, res, next) {
 
 app.use(function (req, res, next) {
 
-    if (req.url === '/users/signin' || req.url === '/users/signup') {
+    if (req.url === '/users/signin' || req.url === '/users/signup' || (req.url).includes('unauth')) {
         next();
     } else if (req.method != 'OPTIONS') {
         //check this only for non css, js, images: these should be cookieless
