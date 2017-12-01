@@ -174,7 +174,8 @@ var corsOptions = {
     optionsSuccessStatus: 200,
     credentials: true
 };
-//app.use(cors(corsOptions));
+app.use(cors(corsOptions));
+/*
 var unAuthUrls = [ '/test/unauth' ];
 var isThisUnAuthAllowed = function ( req ) {
     if( unAuthUrls.indexOf( req.originalUrl ) != -1 )
@@ -188,9 +189,10 @@ app.use( function ( req, res, next ) {
         next();
     } else {
         app.use(cors(corsOptions));
+        next();
     }
 });
-
+*/
 app.use(logger('dev'));
 // app.use(bodyParser.urlencoded());
 // app.use(bodyParser.json());
