@@ -174,8 +174,8 @@ var corsOptions = {
     optionsSuccessStatus: 200,
     credentials: true
 };
-app.use(cors(corsOptions));
-/*
+//app.use(cors(corsOptions));
+
 var unAuthUrls = [ '/test/unauth' ];
 var isThisUnAuthAllowed = function ( req ) {
     if( unAuthUrls.indexOf( req.originalUrl ) != -1 )
@@ -183,7 +183,7 @@ var isThisUnAuthAllowed = function ( req ) {
     else
         return false;
 }
-
+/*
 app.use( function ( req, res, next ) {
     if( isThisUnAuthAllowed( req ) ){
         next();
@@ -193,6 +193,25 @@ app.use( function ( req, res, next ) {
     }
 });
 */
+
+var corsOptionsDelegate = function (req, callback) {
+    var corsOptions = {};
+    var err = null;
+
+    if ( isThisUnAuthAllowed( req ) ){
+        corsOptions.origin= false;
+    } else if(whitelist.indexOf(req.header('Origin')) !== -1) {
+        corsOptions.origin = true;// reflect (enable) the requested origin in the CORS response
+        corsOptions.optionsSuccessStatus = 200;
+        corsOptions.credentials = true;
+    }else{
+       err = new Error('Not allowed by CORS')
+    }
+    callback(err, corsOptions) // callback expects two parameters: error and options
+}
+
+app.use(cors(corsOptionsDelegate));
+
 app.use(logger('dev'));
 // app.use(bodyParser.urlencoded());
 // app.use(bodyParser.json());
