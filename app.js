@@ -165,7 +165,7 @@ var whitelist = ['http://local.intelverse.com:9090', 'http://api.intelverse.com'
 var corsOptions = {
     //origin : "http://local.intelverse.com:9090",
     origin: function (origin, callback) {
-        if (whitelist.indexOf(origin) !== -1) {
+        if ( whitelist.indexOf(origin) !== -1 ) {
             callback(null, true)
         } else {
             callback(new Error('Not allowed by CORS'))
@@ -175,7 +175,24 @@ var corsOptions = {
     credentials: true
 };
 app.use(cors(corsOptions));
+/*
+var unAuthUrls = [ '/test/unauth' ];
+var isThisUnAuthAllowed = function ( req ) {
+    if( unAuthUrls.indexOf( req.originalUrl ) != -1 )
+        return true;
+    else
+        return false;
+}
 
+app.use( function ( req, res, next ) {
+    if( isThisUnAuthAllowed( req ) ){
+        next();
+    } else {
+        app.use(cors(corsOptions));
+        next();
+    }
+});
+*/
 app.use(logger('dev'));
 // app.use(bodyParser.urlencoded());
 // app.use(bodyParser.json());
