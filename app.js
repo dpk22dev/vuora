@@ -15,6 +15,7 @@ var chat = require('./routes/chat');
 var f2f = require('./routes/f2f');
 var selfGoogleAuth = require('./routes/selfGoogleAuth');
 var timeline = require('./routes/event');
+var notification = require('./routes/notification');
 var seminar = require('./routes/seminar');
 var video = require('./routes/video');
 var questions = require('./routes/questions');
@@ -165,7 +166,7 @@ var whitelist = ['http://local.intelverse.com:9090', 'http://api.intelverse.com'
 var corsOptions = {
     //origin : "http://local.intelverse.com:9090",
     origin: function (origin, callback) {
-        if ( whitelist.indexOf(origin) !== -1 ) {
+        if (whitelist.indexOf(origin) !== -1) {
             callback(null, true)
         } else {
             callback(new Error('Not allowed by CORS'))
@@ -176,40 +177,39 @@ var corsOptions = {
 };
 //app.use(cors(corsOptions));
 
-var unAuthUrls = [ '/test/unauth' ];
-var isThisUnAuthAllowed = function ( req ) {
-    if( unAuthUrls.indexOf( req.originalUrl ) != -1 )
+var unAuthUrls = ['/users/unauth/getuid'];
+var isThisUnAuthAllowed = function (req) {
+    if (( req.url ).includes('unauth'))
         return true;
     else
         return false;
-}
+};
 /*
-app.use( function ( req, res, next ) {
-    if( isThisUnAuthAllowed( req ) ){
-        next();
-    } else {
-        app.use(cors(corsOptions));
-        next();
-    }
-});
-*/
+ app.use( function ( req, res, next ) {
+ if( isThisUnAuthAllowed( req ) ){
+ next();
+ } else {
+ app.use(cors(corsOptions));
+ next();
+ }
+ });
+ */
 
 var corsOptionsDelegate = function (req, callback) {
     var corsOptions = {};
     var err = null;
 
-    if ( isThisUnAuthAllowed( req ) ){
-        corsOptions.origin= false;
-    } else if(whitelist.indexOf(req.header('Origin')) !== -1) {
+    if (isThisUnAuthAllowed(req)) {
+        corsOptions.origin = false;
+    } else if (whitelist.indexOf(req.header('Origin')) !== -1) {
         corsOptions.origin = true;// reflect (enable) the requested origin in the CORS response
         corsOptions.optionsSuccessStatus = 200;
         corsOptions.credentials = true;
-    }else{
-       err = new Error('Not allowed by CORS')
+    } else {
+        err = new Error('Not allowed by CORS')
     }
     callback(err, corsOptions) // callback expects two parameters: error and options
-}
-
+};
 app.use(cors(corsOptionsDelegate));
 
 app.use(logger('dev'));
@@ -227,6 +227,7 @@ app.use('/event', timeline);
 app.use('/f2f', f2f);
 app.use('/video', video);
 app.use('/questions', questions);
+app.use('/notification', notification);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
