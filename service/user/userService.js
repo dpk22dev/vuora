@@ -338,8 +338,10 @@ function getTagSuggestionStack(tag, callback) {
 }
 userUtil.getTagSuggestion = function (tag, callback) {
     var tagSuggestion = [];
-    async.parallel([getTagSuggestionLocal.bind(null, tag),
-        getTagSuggestionStack.bind(null, tag)], function (err, results) {
+    async.parallel([
+            getTagSuggestionLocal.bind(null, tag),
+            getTagSuggestionStack.bind(null, tag)
+        ], function (err, results) {
         if (results) {
             var localResponse = results[0] ? results[0] : [];
             var stackResponse = results[1] ? results[1] : [];
@@ -405,6 +407,14 @@ userUtil.search = function (data, callback) {
             break;
         }
     }
+};
+
+userUtil.getFollowers = function (id, callback) {
+    var mongoDB = mongo.getInstance();
+    var collection = mongoDB.collection(FOLLOWS);
+    collection.find({follows: id}).toArray(function (err, results) {
+        utils.convertToResponse(err, results, 'Error occured while getting followers list');
+    });
 };
 module.exports = userUtil;
 

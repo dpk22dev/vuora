@@ -4,8 +4,9 @@ var util = require('./../lib/util');
 var youtubeApi = require('../lib/youtubeApi');
 const seminarModel = require('../models/seminarData');
 var timelineUtil = require('./../lib/eventService');
+var notificationUtil = require('./../lib/notificationService');
 var qRService = require('./../lib/questionRedisService');
-
+var async = require('async');
 var bodyParser = require('body-parser');
 
 var jsonParser = bodyParser.json({type: 'application/json'});
@@ -58,9 +59,36 @@ router.post('/stream/status', jsonParser, function (req, res, next) {
     });
 });
 
+function updateBindings(data, callback) {
+    seminarModel.updateBindings(data).then(function (ok) {
+        callback(null, data);
+    }, function (err) {
+        callback(err, null);
+    });
+}
+
+function sendNotification(data, callback) {
+    var noti = {};
+    noti.from = data.requestor;
+    noti.to = data.requestee;
+    noti.type = 0;
+    noti.videoId = data.videoId;
+    noti.valid = 999999;
+    notificationUtil.save(noti, callback);
+}
+
+function sendNotificationForEvent(data, callback) {
+    timelineUtil.getEventByVideoId(data, function (err, results) {
+        results = results || [];
+        async.map(results, sendNotification, function (err, result) {
+            callback(err, result);
+        })
+    });
+}
+
 router.post('/preview', jsonParser, function (req, res, next) {
     //assuming stream status check was sucesful
-    var streamData = seminarModel.createPreviewTransitionData( req.body );
+    var streamData = seminarModel.createPreviewTransitionData(req.body);
     //var streamData = seminarModel.dummyTransitionData;
     //streamData.broadcast.broadcastStatus = 'testing';
 
@@ -72,16 +100,17 @@ router.post('/preview', jsonParser, function (req, res, next) {
      seminarModel.updateBindings( data, function(){} );*/
 
     youtubeApi.setTransition(streamData, function (err, result) {
-            if ( err ) {
-                res.send( util.convertToResponse(err, null, 'error while transitioning preview state on youtube') );
+            if (err) {
+                res.send(util.convertToResponse(err, null, 'error while transitioning preview state on youtube'));
             } else {
                 //@todo save to db after binding
                 //streamData.updateBindings();
-
-                seminarModel.updateBindings(result.result).then(function (ok) {
-                    res.send(result.result);
-                }, function (err) {
-                    res.send(util.convertToResponse(err, null, 'error while inserting in mongo'));
+                result = result.result;
+                async.parallel([
+                    updateBindings.bind(null, result),
+                    sendNotification(null, result)
+                ], function (err, results) {
+                    res.send(utils.convertToResponse(err, results, 'error while inserting in mongo'));
                 });
             }
         }
@@ -94,11 +123,11 @@ router.post('/live', jsonParser, function (req, res, next) {
     //var streamData = seminarModel.dummyTransitionData;
     //streamData.broadcast.broadcastStatus = 'live';
 
-    var streamData = seminarModel.createLiveTransitionData( req.body );
+    var streamData = seminarModel.createLiveTransitionData(req.body);
 
     youtubeApi.setTransition(streamData, function (err, result) {
-        if ( err ) {
-            res.send( util.convertToResponse(err, null, 'error while transitioning live state on youtube') );
+        if (err) {
+            res.send(util.convertToResponse(err, null, 'error while transitioning live state on youtube'));
         } else {
             seminarModel.updateBindings(result.result).then(function (ok) {
                 res.send(result.result)
@@ -115,17 +144,19 @@ router.post('/complete', jsonParser, function (req, res, next) {
     //var streamData = req.body;
     //var streamData = seminarModel.dummyTransitionData;
     //streamData.broadcast.broadcastStatus = 'complete';
-    
-    var streamData = seminarModel.createBroadcastCompleteTransitionData( req.body );
-    
+
+    var streamData = seminarModel.createBroadcastCompleteTransitionData(req.body);
+
     youtubeApi.setTransition(streamData, function (err, result) {
-        if ( err ) {
-            res.send( util.convertToResponse(err, null, 'error while transitioning complete state on youtube') );
+        if (err) {
+            res.send(util.convertToResponse(err, null, 'error while transitioning complete state on youtube'));
         } else {
-            seminarModel.updateBindings(result.result).then(function (ok) {
-                res.send(result.result);
-            }, function (err) {
-                res.send(util.convertToResponse(err, null, 'error while inserting in mongo'));
+            result = result.result || [];
+            async.parallel([
+                updateBindings.bind(null, result),
+                sendNotification(null, result)
+            ], function (err, results) {
+                res.send(util.convertToResponse(err, results, 'error while inserting in mongo'));
             });
         }
     });

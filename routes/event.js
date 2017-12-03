@@ -110,6 +110,9 @@ router.get('/videos', function (req, res) {
 
 router.post('/search', jsonParser, function (req, res) {
     var body = req.body;
+    body.from = body.from || 0;
+    body.to = body.to || 1893436200000;
+    body.tag = body.tag || "";
     var type = req.query.type;
     timelineUtil.searchEvent(body, function (result) {
         res.send(result)

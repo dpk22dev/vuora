@@ -189,6 +189,12 @@ router.get('/unfollows', function (req, res) {
     })
 });
 
+
+router.get('/followeres', function (req, res) {
+    var user = req.headers.userId;
+
+});
+
 router.get('/unauth/getuid', function (req, res) {
     var ids = req.query.ids;
     var idArr = ids.split(",");
