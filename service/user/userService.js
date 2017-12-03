@@ -87,40 +87,31 @@ function updateToElastic(index, type, id, callback) {
     });
 }
 
-function getUserByTags(data, sort, callback) {
-    var page = data.page || 1;
-    var mongoDB = mongo.getInstance();
-    var collection = mongoDB.collection(USER_TAG_COLLECTION);
-    collection.find({tags: data.tag}).sort({rating: sort}).skip(page).limit(10).toArray(function (err, results) {
-        if (results) {
-            var uids = [];
-            results.forEach(function (result) {
-                uids.push(result.userId);
-            });
-            async.map(uids, userUtil.getUser, callback);
-        } else {
-            callback(utils.convertToResponse(err, results, 'Error occured while getting response from DB'));
+function searchQuery(data) {
+    var query = {
+        "query": {
+            "bool": {
+                "should": [
+                    {
+                        "term": {"tags": data.value}
+                    },
+                    {
+                        "wildcard": {"name": "*" + data.value + "*"}
+                    }
+                ],
+                "minimum_should_match": 1,
+                "boost": 1.0
+            }
         }
-    });
+    };
+    return query;
 }
 
-function getRelUserByTags(data, callback) {
-    var dev = data.page || 1;
-    var rate = data.rate || 5;
-    var min = (rate - dev) >= 0 ? (rate - dev) : 0;
-    var max = (rate + dev) <= 10 ? (rate + dev) : 10;
-    var mongoDB = mongo.getInstance();
-    var collection = mongoDB.collection(USER_TAG_COLLECTION);
-    collection.find({$and: [{"$gte": min}, {"$lte": max}]}).toArray(function (err, results) {
-        if (results) {
-            var uids = [];
-            results.forEach(function (result) {
-                uids.push(result.userId);
-            });
-            async.map(uids, userUtil.getUser, callback);
-        } else {
-            callback(utils.convertToResponse(err, results, 'Error occured while getting response from DB'));
-        }
+function getUserByTags(data, callback) {
+    var page = data.page || 1;
+    var query = searchQuery(data);
+    elastic.search(ES_INDEX, ES_USER_TYPE, query, function (err, results) {
+        callback(utils.convertToResponse(err, results, 'Error occured while getting data'))
     })
 }
 
@@ -324,24 +315,24 @@ function getTagSuggestionLocal(tag, callback) {
 
 function getTagSuggestionStack(tag, callback) {
     var tags = [];
-    /* var url = 'https://stackoverflow.com/filter/tags?q=' + tag + '&newstyle=true&_=' + new Date().getTime();
-     utils.get(url, function (err, results) {
-     if (results) {
-     var res = JSON.parse(results);
-     res.forEach(function (result) {
-     tags.push(result.Name);
-     })
-     }
-     callback(err, tags);
-     })*/
+    var url = 'https://stackoverflow.com/filter/tags?q=' + tag + '&newstyle=true&_=' + new Date().getTime();
+    utils.get(url, function (err, results) {
+        if (results) {
+            var res = JSON.parse(results);
+            res.forEach(function (result) {
+                tags.push(result.Name);
+            })
+        }
+        callback(err, tags);
+    })
     callback(null, [])
 }
 userUtil.getTagSuggestion = function (tag, callback) {
     var tagSuggestion = [];
     async.parallel([
-            getTagSuggestionLocal.bind(null, tag),
-            getTagSuggestionStack.bind(null, tag)
-        ], function (err, results) {
+        getTagSuggestionLocal.bind(null, tag),
+        getTagSuggestionStack.bind(null, tag)
+    ], function (err, results) {
         if (results) {
             var localResponse = results[0] ? results[0] : [];
             var stackResponse = results[1] ? results[1] : [];
@@ -389,24 +380,9 @@ userUtil.unfollows = function (follower, follows, callback) {
 };
 
 userUtil.search = function (data, callback) {
-    var tags = data.tags;
-    var page = data.page;
-    var type = data.type;
-
-    switch (type) {
-        case "asc": {
-            getUserByTags(data, 1, callback);
-            break;
-        }
-        case "desc": {
-            getUserByTags(data, -1, callback);
-            break;
-        }
-        case "rel": {
-            getRelUserByTags(data, callback);
-            break;
-        }
-    }
+    getUserByTags(data, function (result) {
+        callback(result);
+    })
 };
 
 userUtil.getFollowers = function (id, callback) {

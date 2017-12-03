@@ -95,4 +95,12 @@ router.post('/status', jsonParser, function (req, res) {
         res.send(result);
     })
 });
+
+router.post('/search', jsonParser, function(req, res){
+    var data= req.body;
+    qService.searchByTagsOrQuestion(data, function(result){
+        res.send(result);
+    });
+});
+
 module.exports = router;
