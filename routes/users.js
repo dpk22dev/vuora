@@ -186,9 +186,11 @@ router.get('/unfollows', function (req, res) {
 });
 
 
-router.get('/followeres', function (req, res) {
+router.get('/followers', function (req, res) {
     var user = req.headers.userId;
-
+    userUtil.getFollowers(user, function (result) {
+        res.send(result);
+    })
 });
 
 router.get('/unauth/getuid', function (req, res) {

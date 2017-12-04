@@ -29,7 +29,7 @@ router.get('/', function (req, res) {
     })
 });
 
-router.get('/questions', function (req, res) {
+router.get('/find', function (req, res) {
     var videoId = req.query.videoid;
     var questionId = req.query.questionid;
     if (videoId) {
