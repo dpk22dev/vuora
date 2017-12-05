@@ -3,6 +3,8 @@ var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
+// cookie is just cookie-parser deps; we can use it
+var cookieStrParser = require('cookie');
 //var bodyParser = require('body-parser');
 var jsonwebtoken = require("jsonwebtoken");
 var uidUtil = require('./lib/userIdUtil');
@@ -30,20 +32,51 @@ process.env.NODE_CONFIG_DIR = '../config';
 var server = require('http').Server(app);
 //var io = require('socket.io')(server);
 
+/*
+hack to run sockets
+ ioUserIdData.userId contains userId used in sockets
+*/
+var ioUserIdData ={};
+var tokenCheckCb = function ( req, cb ) {
+
+    var cookieStr = req.headers.cookie ? req.headers.cookie : null;
+    var cookieArr = cookieStrParser.parse( cookieStr );
+    var token = cookieArr['user'];
+    if (token) {
+        try {
+            var decoded = jsonwebtoken.verify(token, config.get('jwtsecret'));
+        }catch( e ){
+            cb( e.message );
+            return;
+        }
+        //userId = decoded.auth.emailId || 'aws.user101@gmail.com';
+        userId = decoded.auth.id;
+        uidUtil.getUID(userId, function (err, result) {
+            if (err) {
+                cb( new Error('JWT token not authorized in ws switch') )
+            } else {
+                ioUserIdData.userId = result.uid;
+                cb(null, true);
+            }
+        });
+    } else {
+        console.log('JWT token not found');
+        //console.log('still passing....by user aws.user101@gmail.com');
+        //userId = 'vinaysahuhbti@gmail.com';
+        cb( new Error('JWT token not found in ws switch') )
+    }
+}
+
 //chat socket start
 var chatIo = require('socket.io')(server, {
     path: '/chatNsp',
     serveClient: false,
     transports: ['polling', 'websocket']
 });
-var chatIoData = {};
-chatIo.set('authorization', function (handshakeData, cb) {
-    console.log('Auth: ', handshakeData._query.userId);
-    chatIoData.userId = handshakeData._query.userId;
-    cb(null, true);
-});
+//var chatIoData = {};
+chatIo.set('authorization', tokenCheckCb );
 var chatSocketObj = require('./lib/chatSocket');
-chatSocketObj.chatSocketCreator(chatIo, chatIoData);
+chatSocketObj.chatSocketCreator(chatIo, ioUserIdData);
 
 //var chatSocket = require('./lib/chatSocket')(io);
 // chat socket ends
@@ -53,15 +86,10 @@ var f2fIo = require('socket.io')(server, {
     serveClient: false,
     transports: ['polling', 'websocket']
 });
-var f2fIoData = {};
-f2fIo.set('authorization', function (handshakeData, cb) {
-    console.log('Auth: ', handshakeData._query.userId);
-
-    f2fIoData.userId = handshakeData._query.userId;
-    cb(null, true);
-});
+//var f2fIoData = {};
+f2fIo.set('authorization', tokenCheckCb );
 var f2fSocketObj = require('./lib/f2fSocket');
-f2fSocketObj.f2fSocketCreator(f2fIo, f2fIoData);
+f2fSocketObj.f2fSocketCreator(f2fIo, ioUserIdData);
 
 //
 var notiIo = require('socket.io')(server, {
@@ -69,29 +97,25 @@ var notiIo = require('socket.io')(server, {
     serveClient: false,
     transports: ['polling', 'websocket']
 });
-var notiIoData = {};
-notiIo.set('authorization', function (handshakeData, cb) {
-    // don't know which way is better; should we verify userid cookie from each request for socket or send userid directly in query
-    console.log('Auth: ', handshakeData._query.userId);
-    notiIoData.userId = handshakeData._query.userId;
-
-    cb(null, true);
-});
+//var notiIoData = {};
+notiIo.set('authorization', tokenCheckCb );
 var notiSocketObj = require('./lib/notiSocket');
-notiSocketObj.notiSocketCreator(notiIo, notiIoData);
+notiSocketObj.notiSocketCreator(notiIo, ioUserIdData);
 //var notiSocket = notiSocketObj.notiSocket;
 //app.set('notiSocket', notiSocket);
+
+// setting socket ios to be used in routers
+app.use(function (req, res, next) {
+    //res.io = io; //comment this after trry
+    res.chatIo = chatIo;
+    res.notiIo = notiIo;
+    res.f2fIo = f2fIo;
+    next();
+});
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
-
-// try it
-app.use(function (req, res, next) {
-    //res.io = io; //comment this after trry
-    req.notiIo = notiIo;
-    next();
-});
 
 app.use(function (req, res, next) {
 
@@ -102,7 +126,12 @@ app.use(function (req, res, next) {
         var token = req.cookies ? req.cookies.user : null;
         var userId = null;
         if (token) {
-            var decoded = jsonwebtoken.verify(token, config.get('jwtsecret'));
+            try {
+                var decoded = jsonwebtoken.verify(token, config.get('jwtsecret'));
+            }catch( e ){
+                res.status(404).send( e.message );
+                return;
+            }
             //userId = decoded.auth.emailId || 'aws.user101@gmail.com';
             userId = decoded.auth.id;
             uidUtil.getUID(userId, function (err, result) {
@@ -215,7 +244,7 @@ app.use(cors(corsOptionsDelegate));
 app.use(logger('dev'));
 // app.use(bodyParser.urlencoded());
 // app.use(bodyParser.json());
-app.use(cookieParser());
+//app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
