@@ -66,4 +66,9 @@ router.get('/gclbk', function (req, res) {
     });
 });
 
+router.get('/unauth/allClients', function (req, res) {
+    console.log( chatIo );
+    res.end();
+});
+
 module.exports = router;
