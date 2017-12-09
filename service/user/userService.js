@@ -61,6 +61,15 @@ function Follows(primary, secondry) {
     this.follows = secondry;
 }
 
+function getUser(id, callback) {
+    id = Long.fromNumber(id);
+    var mongoDB = mongo.getInstance();
+    var collection = mongoDB.collection(USER_COLLECTION);
+    collection.findOne({userId: id}, function (err, res) {
+        callback(err, res);
+    })
+}
+
 function updateToElastic(index, type, id, callback) {
     id = Long.fromNumber(id);
     var mongoDB = mongo.getInstance();
@@ -268,6 +277,20 @@ userUtil.getUser = function (id, callback) {
     collection.findOne({userId: id}, function (err, res) {
         callback(utils.convertToResponse(err, res, "Error occured while getting user data from mongo"));
     })
+};
+
+userUtil.getUsers = function (ids, callback) {
+    var uids = [];
+    userIdUtil.getUIDArray(ids, function (err, result) {
+        if (result) {
+            ids.forEach(function (id) {
+                uids.push(result[id]);
+            })
+        }
+        async.map(uids, getUser, function (err, results) {
+            callback(utils.convertToResponse(err, results, 'Error occored whilr getting user data from mongp'))
+        })
+    });
 };
 
 userUtil.saveCred = function (id, pwd, callback) {

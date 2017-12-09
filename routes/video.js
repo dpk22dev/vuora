@@ -81,7 +81,7 @@ router.post('/suggest/searchPages', jsonParser, function (req, res, next) {
                 res.send(util.convertToResponse(resolve.error.err, null, 'error in fetching videos for query'));
             }
             res.send(util.convertToResponse(null, resolve.vidsArr, 'Done'));
-        })
+        });
         return;
     }
 
@@ -174,11 +174,11 @@ var _internal = function (recData, tags, res, processVidsBeforeSendingResult) {
     }, function (err) {
         res.send(util.convertToResponse(err, null, 'error in fetching videos for tags'));
     });
-}
+};
 
 var mergeTagVids = function (tobj1, tobj2) {
     for (var attrname in tobj2) {
         tobj1[attrname] = tobj2[attrname];
     }
     return tobj1;
-}
+};

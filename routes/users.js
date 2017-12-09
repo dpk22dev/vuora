@@ -95,6 +95,15 @@ router.get('/getuser', function (req, res, next) {
     })
 });
 
+router.get('/getusers', function (req, res, next) {
+    var passUser = req.query.id;
+    var userArr = passUser.split(",") || [];
+
+    userUtil.getUsers(userArr, function (response) {
+        res.send(response);
+    })
+});
+
 router.get('/suggestions/tag', function (req, res, next) {
     var tag = req.query.t;
     userUtil.getTagSuggestion(tag, function (result) {
@@ -115,6 +124,12 @@ router.post('/signup', jsonParser, function (req, res) {
         res.cookie('userId', user.id, {domain: '.intelverse.com', maxAge: 900000000});
         res.send(response);
     })
+});
+
+router.get('/signout', function (req, res) {
+    res.cookie('user', '', {domain: '.intelverse.com', maxAge: 900000000, httpOnly: true});
+    res.cookie('userId', '', {domain: '.intelverse.com', maxAge: 900000000});
+    res.send();
 });
 
 router.post('/signin', jsonParser, function (req, res) {
