@@ -328,7 +328,7 @@ function getTagSuggestionLocal(tag, callback) {
         if (res) {
             if (res) {
                 res.forEach(function (obj) {
-                    suggestions.push(obj._source.skill);
+                    suggestions.push(obj.skill);
                 })
             }
         }
@@ -347,8 +347,7 @@ function getTagSuggestionStack(tag, callback) {
             })
         }
         callback(err, tags);
-    })
-    callback(null, [])
+    });
 }
 userUtil.getTagSuggestion = function (tag, callback) {
     var tagSuggestion = [];
