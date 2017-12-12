@@ -97,15 +97,18 @@ function updateToElastic(index, type, id, callback) {
 }
 
 function searchQuery(data) {
+    var name = data.name || '';
+    var tags = data.tags || [];
+
     var query = {
         "query": {
             "bool": {
                 "should": [
                     {
-                        "term": {"tags": data.value}
+                        "terms": {"tags": tags}
                     },
                     {
-                        "wildcard": {"name": "*" + data.value + "*"}
+                        "wildcard": {"name": "*" + name + "*"}
                     }
                 ],
                 "minimum_should_match": 1,
@@ -117,7 +120,6 @@ function searchQuery(data) {
 }
 
 function getUserByTags(data, callback) {
-    var page = data.page || 1;
     var query = searchQuery(data);
     elastic.search(ES_INDEX, ES_USER_TYPE, query, function (err, results) {
         callback(utils.convertToResponse(err, results, 'Error occured while getting data'))
