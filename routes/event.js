@@ -101,9 +101,8 @@ router.get('/', function (req, res) {
 });
 
 router.get('/videos', function (req, res) {
-    var userId = req.headers['userId'];
-    var videoId = req.query.videoId;
-    timelineUtil.getEventByVideoId({videoId: videoId}, function (result) {
+    var videoIds = req.query.videoId.split(",") || [];
+    timelineUtil.getEventsByVideoIds({videoIds: videoIds}, function (result) {
         res.send(result);
     })
 });
