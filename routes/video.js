@@ -39,7 +39,7 @@ router.post('/votes', jsonParser, function (req, res, next) {
     });
 });
 
-router.get('/show/:videoId', function (req, res, next) {
+router.get(['/show/:videoId', '/unauth/show/:videoId'], function (req, res, next) {
     //get url for that videoid, embed that in page and show thaat to user with other suggestions
     var inpData = {};
     inpData.videoId = req.params.videoId;

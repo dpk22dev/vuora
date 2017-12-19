@@ -187,7 +187,7 @@ router.get('/:broadCastId', function (req, res, next) {
 });
 
 // get seminar info based on videodid
-router.get('/', function (req, res, next) {
+router.get(['/','/unauth'], function (req, res, next) {
     var data = {};
     data.videoId = req.query.videoId;
     seminarModel.getSeminarByVideoId(data).then(function (ok) {

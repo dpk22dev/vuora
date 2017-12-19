@@ -29,7 +29,7 @@ router.get('/', function (req, res) {
     })
 });
 
-router.get('/find', function (req, res) {
+router.get(['/find', '/unauth/find'], function (req, res) {
     var videoId = req.query.videoid;
     var questionId = req.query.questionid;
     var page = req.query.page || 1;
@@ -45,7 +45,7 @@ router.get('/find', function (req, res) {
     }
 });
 
-router.get('/questionbytag', function (req, res) {
+router.get(['/questionbytag', '/unauth/questionbytag'], function (req, res) {
     var page = req.query.page;
     var tags = req.query.tags;
     var limit = req.query.limit;
@@ -65,7 +65,7 @@ router.post('/vote', jsonParser, function (req, res) {
     })
 });
 
-router.post('/votecount', jsonParser, function (req, res) {
+router.post(['/votecount', '/unauth/votecount'], jsonParser, function (req, res) {
     var data = req.body;
     if (data.type === 'question') {
         qRService.voteCountByQuestionId(data.id, function (result) {

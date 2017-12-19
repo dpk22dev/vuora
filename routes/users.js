@@ -98,8 +98,7 @@ router.get('/getuser', function (req, res, next) {
 });
 
 
-
-router.get('/getusers', function (req, res, next) {
+router.get(['/getusers', '/unauth/getusers'], function (req, res, next) {
     var passUser = req.query.id;
     var userArr = passUser.split(",") || [];
 
@@ -108,7 +107,7 @@ router.get('/getusers', function (req, res, next) {
     })
 });
 
-router.get('/suggestions/tag', function (req, res, next) {
+router.get(['/suggestions/tag', '/unauth/suggestions/tag'], function (req, res, next) {
     var tag = req.query.t;
     userUtil.getTagSuggestion(tag, function (result) {
         res.send(result);
