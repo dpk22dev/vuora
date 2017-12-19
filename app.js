@@ -32,6 +32,72 @@ process.env.NODE_CONFIG_DIR = '../config';
 var server = require('http').Server(app);
 //var io = require('socket.io')(server);
 
+// cors code begins
+var whitelist = ['http://local.intelverse.com:9090', 'http://api.intelverse.com', 'http://apis.intelverse.com', 'http://intelverse.com/', 'http://www.intelverse.com/'];
+/* var corsOptions = {
+ origin: function (origin, callback) {
+ if (whitelist.indexOf(origin) !== -1) {
+ callback(null, true)
+ } else {
+ callback(new Error('Not allowed by CORS'))
+ }
+ },
+ optionsSuccessStatus: 200,
+ credentials: true
+ }*/
+
+var corsOptions = {
+    //origin : "http://local.intelverse.com:9090",
+    origin: function (origin, callback) {
+        if (whitelist.indexOf(origin) !== -1) {
+            callback(null, true)
+        } else {
+            callback(new Error('Not allowed by CORS'))
+        }
+    },
+    optionsSuccessStatus: 200,
+    credentials: true
+};
+//app.use(cors(corsOptions));
+
+var unAuthUrls = ['/users/unauth/getuid'];
+var isThisUnAuthAllowed = function (req) {
+    if (( req.url ).includes('unauth'))
+        return true;
+    else
+        return false;
+};
+/*
+ app.use( function ( req, res, next ) {
+ if( isThisUnAuthAllowed( req ) ){
+ next();
+ } else {
+ app.use(cors(corsOptions));
+ next();
+ }
+ });
+ */
+
+var corsOptionsDelegate = function (req, callback) {
+    var corsOptions = {};
+    var err = null;
+
+    if (isThisUnAuthAllowed(req)) {
+        corsOptions.origin = false;
+    } else if (whitelist.indexOf(req.header('Origin')) !== -1) {
+        corsOptions.origin = true;// reflect (enable) the requested origin in the CORS response
+        corsOptions.optionsSuccessStatus = 200;
+        corsOptions.credentials = true;
+    } else {
+        err = new Error('Not allowed by CORS')
+    }
+    callback(err, corsOptions) // callback expects two parameters: error and options
+};
+app.use(cors(corsOptionsDelegate));
+
+// cors code ends
+
+
 /*
 hack to run sockets
  ioUserIdData.userId contains userId used in sockets
@@ -129,14 +195,17 @@ app.use(function (req, res, next) {
             try {
                 var decoded = jsonwebtoken.verify(token, config.get('jwtsecret'));
             }catch( e ){
-                res.status(404).send( e.message );
+//                res.status(404).send( e.message );
+                var response = { status : 401, message : "Unauthorized access" }
+                res.status(200).send( response );
                 return;
             }
             //userId = decoded.auth.emailId || 'aws.user101@gmail.com';
             userId = decoded.auth.id;
             uidUtil.getUID(userId, function (err, result) {
                 if (err) {
-                    res.status(404).send('Error occured while recogninsing user!!!');
+		    var response = { status : 401, message : "Unauthorized access" }
+	            res.status(200).send( response );
                 } else {
                     req.headers.fId = userId;
                     req.headers.userId = result.uid;
@@ -147,7 +216,8 @@ app.use(function (req, res, next) {
             console.log('JWT token not found');
             //console.log('still passing....by user aws.user101@gmail.com');
             //userId = 'vinaysahuhbti@gmail.com';
-            res.status(404).send('Error occured while recogninsing user!!!');
+	    var response = { status : 401, message : "Unauthorized access" }
+            res.status(200).send( response );
         }
     } else {
         next();
@@ -179,67 +249,6 @@ app.use(function (req, res, next) {
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-var whitelist = ['http://local.intelverse.com:9090', 'http://api.intelverse.com', 'http://apis.intelverse.com', 'http://intelverse.com/', 'http://www.intelverse.com/'];
-/* var corsOptions = {
- origin: function (origin, callback) {
- if (whitelist.indexOf(origin) !== -1) {
- callback(null, true)
- } else {
- callback(new Error('Not allowed by CORS'))
- }
- },
- optionsSuccessStatus: 200,
- credentials: true
- }*/
-
-var corsOptions = {
-    //origin : "http://local.intelverse.com:9090",
-    origin: function (origin, callback) {
-        if (whitelist.indexOf(origin) !== -1) {
-            callback(null, true)
-        } else {
-            callback(new Error('Not allowed by CORS'))
-        }
-    },
-    optionsSuccessStatus: 200,
-    credentials: true
-};
-//app.use(cors(corsOptions));
-
-var unAuthUrls = ['/users/unauth/getuid'];
-var isThisUnAuthAllowed = function (req) {
-    if (( req.url ).includes('unauth'))
-        return true;
-    else
-        return false;
-};
-/*
- app.use( function ( req, res, next ) {
- if( isThisUnAuthAllowed( req ) ){
- next();
- } else {
- app.use(cors(corsOptions));
- next();
- }
- });
- */
-
-var corsOptionsDelegate = function (req, callback) {
-    var corsOptions = {};
-    var err = null;
-
-    if (isThisUnAuthAllowed(req)) {
-        corsOptions.origin = false;
-    } else if (whitelist.indexOf(req.header('Origin')) !== -1) {
-        corsOptions.origin = true;// reflect (enable) the requested origin in the CORS response
-        corsOptions.optionsSuccessStatus = 200;
-        corsOptions.credentials = true;
-    } else {
-        err = new Error('Not allowed by CORS')
-    }
-    callback(err, corsOptions) // callback expects two parameters: error and options
-};
-app.use(cors(corsOptionsDelegate));
 
 app.use(logger('dev'));
 // app.use(bodyParser.urlencoded());
