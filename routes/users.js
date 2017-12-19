@@ -107,7 +107,7 @@ router.get(['/getusers', '/unauth/getusers'], function (req, res, next) {
     })
 });
 
-router.get(['/suggestions/tag', '/unauth/suggestions/tag'], function (req, res, next) {
+router.get(['/suggestions/tag', '/public/suggestions/tag'], function (req, res, next) {
     var tag = req.query.t;
     userUtil.getTagSuggestion(tag, function (result) {
         res.send(result);
