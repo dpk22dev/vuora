@@ -98,7 +98,7 @@ router.get('/getuser', function (req, res, next) {
 });
 
 
-router.get(['/getusers', '/unauth/getusers'], function (req, res, next) {
+router.get(['/getusers', '/public/getusers'], function (req, res, next) {
     var passUser = req.query.id;
     var userArr = passUser.split(",") || [];
 
