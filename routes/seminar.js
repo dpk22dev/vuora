@@ -162,6 +162,16 @@ router.post('/complete', jsonParser, function (req, res, next) {
     });
 });
 
+// get seminar info based on videodid
+router.get(['/','/public'], function (req, res, next) {
+    var data = {};
+    data.videoId = req.query.videoId;
+    seminarModel.getSeminarByVideoId(data).then(function (ok) {
+        res.send(util.convertToResponse(null, ok, ''));
+    }, function (err) {
+        res.send(util.convertToResponse(err, null, 'unable to get seminar with this id'))
+    });
+});
 
 //@todo
 //delete broadcast
@@ -180,17 +190,6 @@ router.get('/:broadCastId', function (req, res, next) {
     var data = {};
     data.id = req.params.broadCastId;
     seminarModel.getSeminar(data).then(function (ok) {
-        res.send(util.convertToResponse(null, ok, ''));
-    }, function (err) {
-        res.send(util.convertToResponse(err, null, 'unable to get seminar with this id'))
-    });
-});
-
-// get seminar info based on videodid
-router.get(['/','/public'], function (req, res, next) {
-    var data = {};
-    data.videoId = req.query.videoId;
-    seminarModel.getSeminarByVideoId(data).then(function (ok) {
         res.send(util.convertToResponse(null, ok, ''));
     }, function (err) {
         res.send(util.convertToResponse(err, null, 'unable to get seminar with this id'))

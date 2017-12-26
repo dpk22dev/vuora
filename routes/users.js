@@ -8,6 +8,7 @@ var async = require('async');
 var bodyParser = require('body-parser');
 var config = require('config');
 var jsonwebtoken = require("jsonwebtoken");
+var moment = require("moment");
 
 var jsonParser = bodyParser.json({type: 'application/json'});
 
@@ -123,16 +124,25 @@ router.post('/signup', jsonParser, function (req, res) {
             agent: req.headers['user-agent'],
             exp: Math.floor(new Date().getTime() / 1000) + 7 * 24 * 60 * 60
         }, config.get('jwtsecret'));
-        res.cookie('user', token, {domain: '.intelverse.com', maxAge: 900000000, httpOnly: true});
-        res.cookie('userId', user.id, {domain: '.intelverse.com', maxAge: 900000000});
-        res.send(response);
+
+	userIdUtil.getUID( user.id, function (err, result) {
+                if (err) {
+                    var response = { status : 401, message : "User doesn't exist" }
+                    res.status(200).send( response );
+                } else {
+        	    res.cookie('user', token, {domain: '.intelverse.com', maxAge: 900000000, httpOnly: true});
+		    res.cookie('userId', result.uid, {domain: '.intelverse.com', maxAge: 900000000});
+	            res.send(response);
+                }
+        });
     })
 });
 
 router.get('/signout', function (req, res) {
-    res.cookie('user', '', {domain: '.intelverse.com', maxAge: 900000000, httpOnly: true});
-    res.cookie('userId', '', {domain: '.intelverse.com', maxAge: 900000000});
-    res.send();
+    var day = moment("1970-01-01");
+    res.cookie('user', '', {domain: '.intelverse.com', httpOnly: true,  expires: new Date(Date.now() - 900000) });
+    res.cookie('userId', '', {domain: '.intelverse.com',  expires: new Date(Date.now() - 900000)});
+    res.send('expired cookies');
 });
 
 router.post('/signin', jsonParser, function (req, res) {
@@ -143,9 +153,18 @@ router.post('/signin', jsonParser, function (req, res) {
             agent: req.headers['user-agent'],
             exp: Math.floor(new Date().getTime() / 1000) + 7 * 24 * 60 * 60
         }, config.get('jwtsecret'));
-        res.cookie('user', token, {domain: '.intelverse.com', maxAge: 900000000, httpOnly: true});
-        res.cookie('userId', user.id, {domain: '.intelverse.com', maxAge: 900000000});
-        res.send(response);
+
+        userIdUtil.getUID( user.id, function (err, result) {
+                if (err) {
+                    var response = { status : 401, message : "User doesn't exist" }
+                    res.status(200).send( response );
+                } else {
+                    res.cookie('user', token, {domain: '.intelverse.com', maxAge: 900000000, httpOnly: true});
+                    res.cookie('userId', result.uid, {domain: '.intelverse.com', maxAge: 900000000});
+                    res.send(response);
+                }
+        });
+
     })
 })
 ;
@@ -179,7 +198,7 @@ router.post('/activity', jsonParser, function (req, res) {
     })
 });
 
-router.get('/isfollows', function (req, res) {
+router.get( ['/isfollows', '/public/isfollows'], function (req, res) {
     var follows = req.query.id;
     var follower = req.headers.userId;
     userUtil.isFollows(follower, follows, function (result) {
