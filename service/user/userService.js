@@ -65,8 +65,24 @@ function getUser(id, callback) {
     id = Long.fromNumber(id);
     var mongoDB = mongo.getInstance();
     var collection = mongoDB.collection(USER_COLLECTION);
+    var tagCollection = mongoDB.collection(USER_TAG_COLLECTION);
+    var tags = [];
     collection.findOne({userId: id}, function (err, res) {
-        callback(err, res);
+        if (res) {
+            tagCollection.find({userId: id}).toArray(function (err, results) {
+                results.forEach(function (result) {
+                    var tag = result.tag;
+                    if (tags.indexOf(tag) < 0) {
+                        tags.push(tag);
+                    }
+                });
+                res.tags = tags;
+                callback(err, res);
+
+            })
+        } else {
+            callback(err, res);
+        }
     })
 }
 
@@ -159,9 +175,9 @@ userUtil.setTags = function (id, tag, rating, callback) {
         } else {
             updateToElastic(ES_INDEX, ES_USER_TYPE, id, function (res) {
                 if (res.data) {
-                    res = {data: 'Successfully inserted'};
+                    res = 'Successfully inserted';
                 }
-                callback(res);
+                callback(utils.convertToResponse(null, userTag, null));
             });
         }
     });

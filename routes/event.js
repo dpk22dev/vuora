@@ -60,7 +60,12 @@ router.post('/seminar/create', jsonParser, function (req, res) {
     data.from = new Date(body.bStartDateTime).getTime();
     data.to = new Date(body.bEndDateTime).getTime();
 
-    timelineUtil.isConflict(data, function (result) {
+    body.requestee = Long.fromNumber(userId);
+    timelineUtil.createSeminar(body, function (seminarResult) {
+        res.send(seminarResult);
+    });
+
+   /* timelineUtil.isConflict(data, function (result) {
         if (result.data && !result.data.conflict) {
             body.requestee = Long.fromNumber(userId);
             timelineUtil.createSeminar(body, function (seminarResult) {
@@ -70,7 +75,7 @@ router.post('/seminar/create', jsonParser, function (req, res) {
             res.send(result);
         }
     });
-
+*/
 
     uidUtil.getUIDArray([body.requestee], function (err, result) {
 
