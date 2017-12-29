@@ -162,6 +162,38 @@ router.post('/complete', jsonParser, function (req, res, next) {
     });
 });
 
+router.post('/update/', jsonParser, function (req, res, next) {
+    var data = {};
+    data.videoId = req.query.videoId;
+    if( !data.videoId ){
+        res.json(util.convertToResponse(err, null, "Empty video Id provided"));
+        return;
+    }
+
+    var data = seminarModel.getSeminarDataForUpdation( req.body );
+    data.videoId = req.query.videoId;
+    seminarModel.updateSeminar(data).then(function (ok) {
+        res.send(util.convertToResponse(null, {"updated": "ok"}, ''));
+    }, function (err) {
+        res.json(util.convertToResponse(err, null, "updation failed"));
+    });
+});
+
+router.delete('/', function (req, res, next) {
+    var data = {};
+    data.videoId = req.query.videoId;
+    if( !data.videoId ){
+        res.json(util.convertToResponse(err, null, "Empty video Id provided"));
+        return;
+    }
+
+    seminarModel.softDeleteSeminar( data ).then(function (ok) {
+        res.send(util.convertToResponse(null, {"deleted": "ok"}, ''));
+    }, function (err) {
+        res.json(util.convertToResponse(err, null, "deletion failed"));
+    });
+});
+
 // get seminar info based on videodid
 router.get(['/','/public'], function (req, res, next) {
     var data = {};
