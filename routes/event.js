@@ -61,11 +61,7 @@ router.post('/seminar/create', jsonParser, function (req, res) {
     data.to = new Date(body.bEndDateTime).getTime();
 
     body.requestee = Long.fromNumber(userId);
-    timelineUtil.createSeminar(body, function (seminarResult) {
-        res.send(seminarResult);
-    });
-
-   /* timelineUtil.isConflict(data, function (result) {
+    timelineUtil.isConflict(data, function (result) {
         if (result.data && !result.data.conflict) {
             body.requestee = Long.fromNumber(userId);
             timelineUtil.createSeminar(body, function (seminarResult) {
@@ -75,11 +71,22 @@ router.post('/seminar/create', jsonParser, function (req, res) {
             res.send(result);
         }
     });
-*/
 
     uidUtil.getUIDArray([body.requestee], function (err, result) {
 
     });
+});
+
+router.put('/seminar/update', jsonParser, function (req, res) {
+    var body = req.body;
+
+    var data = {};
+    data.from = new Date(body.bStartDateTime).getTime();
+    data.to = new Date(body.bEndDateTime).getTime();
+    data.id = body.eventId;
+    timelineUtil.updateSeminar(data, function (result) {
+        res.send(result);
+    })
 });
 
 /*router.delete('/events/:mid', function (req, res) {
@@ -130,6 +137,15 @@ router.post('/conflict', jsonParser, function (req, res) {
     timelineUtil.isConflict(body, function (result) {
         res.send(result);
     });
+});
+
+
+router.get('/upcoming', function (req, res) {
+    var data = {};
+    data.userId = req.headers.userId;
+    timelineUtil.upcomingSeminar(data, function (result) {
+        res.send(result);
+    })
 });
 
 router.get('/close/seminar', function (req, res) {

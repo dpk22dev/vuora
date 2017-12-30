@@ -49,11 +49,16 @@ router.get(['/questionbytag', '/public/questionbytag'], function (req, res) {
     var page = req.query.page;
     var tags = req.query.tags;
     var limit = req.query.limit;
+    var answered = req.query.answered;
+    var all = req.query.all;
+
     var tagsArr = tags.split(",") || [];
     var data = {};
     data.page = page;
     data.tags = tagsArr;
     data.limit = limit;
+    data.all = all;
+    data.answered = answered;
     qService.getQuestionByTag(data, function (result) {
         res.send(result);
     })
