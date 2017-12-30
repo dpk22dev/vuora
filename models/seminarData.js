@@ -197,7 +197,8 @@ exports.createSeminarData = function (data) {
         },
         "mid": "",
         "videoId": "",
-        "url": ""
+        "url": "",
+        "tags": data.bTags
     };
 
     if (!semData.videoId) {
@@ -278,6 +279,17 @@ exports.convertUser2ModelData = function (data) {
 
 }
 
+exports.getSeminarDataForUpdation = function(data) {
+    var seminarDataInp = {
+        bTitle: data.bTitle,
+        bDescription: data.bDescription,
+        bStartDateTime: data.bStartDateTime,
+        bEndDateTime: data.bEndDateTime,
+        bTags: data.bTags,
+    };
+    return seminarDataInp;
+}
+
 exports.insertSeminar = function (data) {
     var broadcastCol = config.get("mongodb.broadcastCol");
     var mongoDB = mongo.getInstance();
@@ -297,9 +309,25 @@ exports.updateBindings = function (data) {
 
 };
 
-exports.updateSeminar = function () {
+exports.updateSeminar = function ( data ) {
+    var broadcastCol = config.get("mongodb.broadcastCol");
+    var mongoDB = mongo.getInstance();
+    var collection = mongoDB.collection(broadcastCol);
 
+    var promise = collection.updateOne({"videoId": data.videoId}
+        , {$set: { "broadcast.resource.snippet.title" : data.bTitle, "broadcast.resource.snippet.description" : data.bDescription, "broadcast.resource.snippet.scheduledStartTime" :  data.bStartDateTime, "broadcast.resource.snippet.scheduledEndTime" : data.bEndDateTime, "tags": data.bTags } });
+
+    return promise;
 }
+
+exports.softDeleteSeminar = function (data) {
+    var broadcastCol = config.get("mongodb.broadcastCol");
+    var mongoDB = mongo.getInstance();
+    var collection = mongoDB.collection(broadcastCol);
+    var promise = collection.updateOne({"videoId": data.videoId}, { $set: { "deleted": true } } );
+    return promise;
+}
+
 
 exports.deleteSeminar = function (data) {
     var broadcastCol = config.get("mongodb.broadcastCol");
@@ -314,7 +342,7 @@ exports.getSeminar = function (data) {
     var mongoDB = mongo.getInstance();
     var collection = mongoDB.collection(broadcastCol);
 
-    var promise = collection.findOne({"broadcast.id": data.id});
+    var promise = collection.findOne({"broadcast.id": data.id, "deleted" : { "$ne" : true } });
     return promise;
 }
 
@@ -323,7 +351,7 @@ exports.getSeminarByVideoId = function ( data ) {
     var mongoDB = mongo.getInstance();
     var collection = mongoDB.collection(broadcastCol);
 
-    var promise = collection.findOne({"videoId": data.videoId});
+    var promise = collection.findOne({"videoId": data.videoId, "deleted" : { "$ne" : true } });
     return promise;
 }
 
