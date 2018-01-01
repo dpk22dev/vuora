@@ -429,7 +429,7 @@ userUtil.getFollowers = function (id, callback) {
     var mongoDB = mongo.getInstance();
     var collection = mongoDB.collection(FOLLOWS);
     collection.find({follows: id}).toArray(function (err, results) {
-        utils.convertToResponse(err, results, 'Error occured while getting followers list');
+        callback(utils.convertToResponse(err, results, 'Error occured while getting followers list'));
     });
 };
 module.exports = userUtil;
