@@ -80,11 +80,11 @@ router.post('/seminar/create', jsonParser, function (req, res) {
 router.put('/seminar/update', jsonParser, function (req, res) {
     var body = req.body;
 
-    var data = {};
-    data.from = new Date(body.bStartDateTime).getTime();
-    data.to = new Date(body.bEndDateTime).getTime();
-    data.id = body.eventId;
-    timelineUtil.updateSeminar(data, function (result) {
+    //var data = {};
+    //data.from = new Date(body.bStartDateTime).getTime();
+    //data.to = new Date(body.bEndDateTime).getTime();
+    body.id = body.eventId;
+    timelineUtil.updateSeminar(body, function (result) {
         res.send(result);
     })
 });

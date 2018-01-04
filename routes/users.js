@@ -82,14 +82,14 @@ router.put('/orgs', jsonParser, function (req, res) {
     })
 });
 
-router.get('/tags', function (req, res) {
-    var userId = req.headers.userId;
+router.get(['/tags', '/public/tags'], function (req, res) {
+    var userId = req.query.userId || req.headers.userId;
     userUtil.getTags(userId, function (result) {
         res.send(result);
     })
 });
 
-router.get('/getuser', function (req, res, next) {
+router.get(['/getuser', '/public/getuser' ], function (req, res, next) {
     var passUser = req.query.id;
     var userId = passUser || req.headers.userId;
 
