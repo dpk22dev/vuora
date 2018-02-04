@@ -8,6 +8,7 @@ var cookieStrParser = require('cookie');
 //var bodyParser = require('body-parser');
 var jsonwebtoken = require("jsonwebtoken");
 var uidUtil = require('./lib/userIdUtil');
+var fs = require('fs');
 
 var cors = require('cors');
 
@@ -23,13 +24,22 @@ var video = require('./routes/video');
 var questions = require('./routes/questions');
 var config = require('config');
 var cookieParser = require('cookie-parser');
+var mustacheExpress = require('mustache-express');
 
 var app = express();
 app.use(cookieParser());
 
 process.env.NODE_CONFIG_DIR = '../config';
 
-var server = require('http').Server(app);
+var httpServer = require('http').Server(app);
+
+var sslOptions = {
+    key: fs.readFileSync( path.join( __dirname, 'ssl/server.key') ),
+    cert: fs.readFileSync( path.join( __dirname, 'ssl/server.crt' ) )
+};
+var httpsServer = require('https').Server( sslOptions, app);
+
+var server = httpsServer;
 //var io = require('socket.io')(server);
 
 // cors code begins
@@ -93,7 +103,7 @@ var corsOptionsDelegate = function (req, callback) {
     }
     callback(err, corsOptions) // callback expects two parameters: error and options
 };
-app.use(cors(corsOptionsDelegate));
+//app.use(cors(corsOptionsDelegate));
 
 // cors code ends
 
@@ -140,7 +150,7 @@ var chatIo = require('socket.io')(server, {
     transports: ['polling', 'websocket']
 });
 //var chatIoData = {};
-chatIo.set('authorization', tokenCheckCb );
+//chatIo.set('authorization', tokenCheckCb );
 var chatSocketObj = require('./lib/chatSocket');
 chatSocketObj.chatSocketCreator(chatIo, ioUserIdData);
 
@@ -153,7 +163,7 @@ var f2fIo = require('socket.io')(server, {
     transports: ['polling', 'websocket']
 });
 //var f2fIoData = {};
-f2fIo.set('authorization', tokenCheckCb );
+//f2fIo.set('authorization', tokenCheckCb );
 var f2fSocketObj = require('./lib/f2fSocket');
 f2fSocketObj.f2fSocketCreator(f2fIo, ioUserIdData);
 
@@ -164,7 +174,7 @@ var notiIo = require('socket.io')(server, {
     transports: ['polling', 'websocket']
 });
 //var notiIoData = {};
-notiIo.set('authorization', tokenCheckCb );
+//notiIo.set('authorization', tokenCheckCb );
 var notiSocketObj = require('./lib/notiSocket');
 notiSocketObj.notiSocketCreator(notiIo, ioUserIdData);
 //var notiSocket = notiSocketObj.notiSocket;
@@ -178,12 +188,15 @@ app.use(function (req, res, next) {
     res.f2fIo = f2fIo;
     next();
 });
+app.use(express.static(path.join(__dirname, '/public')));
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+app.engine('mustache', mustacheExpress());
+app.set('view engine', 'mustache');
+//app.set('view engine', 'jade');
 
-app.use(function (req, res, next) {
+/*app.use(function (req, res, next) {
 
     if (req.url === '/users/signin' || req.url === '/users/signup' || (req.url).includes('unauth') || req.url === '/users/signout' || (req.url).includes('public') ) {
         next();
@@ -222,7 +235,7 @@ app.use(function (req, res, next) {
     } else {
         next();
     }
-    /* var url = req.url;
+    /!* var url = req.url;
      if (true) {
      next();
      } else {
@@ -244,8 +257,8 @@ app.use(function (req, res, next) {
      res.cookie('jarvis', token, {maxAge: 900000, httpOnly: true});
      res.status(401).send('autorization token is missing new token created!!!');
      }
-     }*/
-});
+     }*!/
+});*/
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
@@ -254,7 +267,6 @@ app.use(logger('dev'));
 // app.use(bodyParser.urlencoded());
 // app.use(bodyParser.json());
 //app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
 app.use('/users', users);

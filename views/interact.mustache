@@ -1,0 +1,262 @@
+<html>
+<head>
+<style>
+    #localVideo {
+        position: relative;
+        width: 250px;
+        height: 250px;
+    }
+    .videoContainer {
+        position: relative;
+        width: 75px;
+        height: 70px;
+    }
+    .videoContainer video {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+    }
+    .volume_bar {
+        position: absolute;
+        width: 5px;
+        height: 0px;
+        right: 0px;
+        bottom: 0px;
+        background-color: #12acef;
+    }
+    .volume {
+        position: absolute;
+        left: 15%;
+        width: 70%;
+        bottom: 2px;
+        height: 10px;
+    }
+
+    .connectionstate {
+        position: absolute;
+        top: 0px;
+        width: 100%;
+        text-align: center;
+        color: #fff
+    }
+</style>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+<script src="/javascripts/socket.io.js"></script>
+<script src="/javascripts/simplewebrtc-with-adapter.bundle.js"></script>
+
+</head>
+<body>
+<p>Hello {{ userId }} Welcome to {{ room }}!</p>
+
+<video id="localVideo"></video>
+<div id="remotes"></div>
+<div>
+    <button id="screenShareButton">share screen</button>
+</div>
+<div id="localScreenContainer"></div>
+
+<footer>
+    <script type="text/javascript">
+        function getURLParam(key,target){
+            var values = [];
+            if (!target) target = location.href;
+
+            key = key.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+
+            var pattern = key + '=([^&#]+)';
+            var o_reg = new RegExp(pattern,'ig');
+            while (true){
+                var matches = o_reg.exec(target);
+                if (matches && matches[1]){
+                    values.push(matches[1]);
+                } else {
+                    break;
+                }
+            }
+
+            if (!values.length){
+                return null;
+            } else {
+                return values.length == 1 ? values[0] : values;
+            }
+        }
+        //@todo set this from server side
+        var userId = getURLParam('userId', location.search );
+        var room  = getURLParam('room', location.search );
+
+        var f2fWebRtcSettings = {
+            url: 'local.intelverse.com:3000',
+            socketio: {
+                path : '/f2fNsp',
+                transports: ['websocket'],
+                query: "userId="+userId
+            },
+            localVideoEl: 'localVideo',
+            // the id/element dom element that will hold remote videos
+            remoteVideosEl: '',
+            // immediately ask for camera access
+            autoRequestMedia: true,
+            debug: true,
+            detectSpeakingEvents: false
+        };
+        var webrtc = new SimpleWebRTC( f2fWebRtcSettings );
+
+        webrtc.on('readyToCall', function () {
+            // you can name it anything
+            if (room) webrtc.joinRoom(room);
+        });
+
+        var showState = function ( container, peer ) {
+            // show the ice connection state
+            if (peer && peer.pc) {
+                var connstate = document.createElement('div');
+                connstate.className = 'connectionstate';
+                container.appendChild(connstate);
+                peer.pc.on('iceConnectionStateChange', function (event) {
+                    switch (peer.pc.iceConnectionState) {
+                        case 'checking':
+                            connstate.innerText = 'Connecting to peer...';
+                            break;
+                        case 'connected':
+                        case 'completed': // on caller side
+                            connstate.innerText = 'Connection established.';
+                            break;
+                        case 'disconnected':
+                            connstate.innerText = 'Disconnected.';
+                            break;
+                        case 'failed':
+                            break;
+                        case 'closed':
+                            connstate.innerText = 'Connection closed.';
+                            break;
+                    }
+                });
+            }
+        }
+
+        // a peer video has been added
+        webrtc.on('videoAdded', function (video, peer) {
+            console.log('video added', peer);
+            var remotes = document.getElementById('remotes');
+            if (remotes) {
+                var container = document.createElement('div');
+                container.className = 'videoContainer';
+                container.id = 'container_' + webrtc.getDomId(peer);
+                container.appendChild(video);
+
+                // suppress contextmenu
+                video.oncontextmenu = function () { return false; };
+
+                var vol = document.createElement('meter');
+                vol.id = 'volume_' + peer.id;
+                vol.className = 'volume';
+                vol.min = -45;
+                vol.max = -20;
+                vol.low = -40;
+                vol.high = -25;
+                container.appendChild(vol);
+
+                remotes.appendChild(container);
+            }
+
+            showState( container, peer );
+        });
+
+
+        // local volume has changed
+        webrtc.on('volumeChange', function (volume, treshold) {
+            showVolume(document.getElementById('localVolume'), volume);
+        });
+
+        // remote volume has changed
+        webrtc.on('remoteVolumeChange', function (peer, volume) {
+            showVolume(document.getElementById('volume_' + peer.id), volume);
+        });
+
+        // a peer video was removed
+        webrtc.on('videoRemoved', function (video, peer) {
+            console.log('video removed ', peer);
+            var remotes = document.getElementById('remotes');
+            var el = document.getElementById(peer ? 'container_' + webrtc.getDomId(peer) : 'localScreenContainer');
+            if (remotes && el) {
+                remotes.removeChild(el);
+            }
+        });
+
+        //connectivity problems handlers
+        webrtc.on('iceFailed', function (peer) {
+            var connstate = document.querySelector('#container_' + webrtc.getDomId(peer) + ' .connectionstate');
+            console.log('local fail', connstate);
+            if (connstate) {
+                connstate.innerText = 'Connection failed.';
+                fileinput.disabled = 'disabled';
+            }
+        });
+
+        // remote p2p/ice failure
+        webrtc.on('connectivityError', function (peer) {
+            var connstate = document.querySelector('#container_' + webrtc.getDomId(peer) + ' .connectionstate');
+            console.log('remote fail', connstate);
+            if (connstate) {
+                connstate.innerText = 'Connection failed.';
+                fileinput.disabled = 'disabled';
+            }
+        });
+
+        // helper function to show the volume
+        function showVolume(el, volume) {
+            console.log('showVolume', volume, el);
+            if (!el) return;
+            if (volume < -45) volume = -45; // -45 to -20 is
+            if (volume > -20) volume = -20; // a good range
+            el.value = volume;
+        }
+        var button = document.getElementById('screenShareButton'),
+                setButton = function (bool) {
+                    button.innerText = bool ? 'share screen' : 'stop sharing';
+                };
+        if (!webrtc.capabilities.supportScreenSharing) {
+            button.disabled = 'disabled';
+        }
+
+        setButton(true);
+
+        button.onclick = function () {
+            if (webrtc.getLocalScreen()) {
+                webrtc.stopScreenShare();
+                setButton(true);
+            } else {
+                webrtc.shareScreen(function (err) {
+                    if (err) {
+                        setButton(true);
+                    } else {
+                        setButton(false);
+                    }
+                });
+
+            }
+        };
+
+        // local screen obtained
+        webrtc.on('localScreenAdded', function (video) {
+            video.onclick = function () {
+                video.style.width = video.videoWidth + 'px';
+                video.style.height = video.videoHeight + 'px';
+            };
+            document.getElementById('localScreenContainer').appendChild(video);
+            $('#localScreenContainer').show();
+        });
+        // local screen removed
+        webrtc.on('localScreenRemoved', function (video) {
+            document.getElementById('localScreenContainer').removeChild(video);
+            $('#localScreenContainer').hide();
+            setButton(true);
+        });
+
+    </script>
+</footer>
+
+</body>
+</html>

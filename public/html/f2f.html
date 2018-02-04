@@ -47,14 +47,40 @@
 <div id="remoteStreamList"></div>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
-<script src="../../javascripts/simplewebrtc-with-adapter.bundle.js"></script>
-<script src="../../javascripts/MediaStreamRecorder.js"></script>
 <script src="../../javascripts/socket.io.js"></script>
+<script src="../../javascripts/simplewebrtc-with-adapter.bundle.js"></script>
 <!--<script src="https://github.com/streamproc/MediaStreamRecorder/releases/download/1.3.4/MediaStreamRecorder.js"></script>-->
 
 <script>
 
-    var userId = location.search && location.search.split('?userId=')[1];
+
+
+    function getURLParam(key,target){
+        var values = [];
+        if (!target) target = location.href;
+
+        key = key.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+
+        var pattern = key + '=([^&#]+)';
+        var o_reg = new RegExp(pattern,'ig');
+        while (true){
+            var matches = o_reg.exec(target);
+            if (matches && matches[1]){
+                values.push(matches[1]);
+            } else {
+                break;
+            }
+        }
+
+        if (!values.length){
+            return null;
+        } else {
+            return values.length == 1 ? values[0] : values;
+        }
+    }
+
+    //var userId = location.search && location.search.split('?userId=')[1];
+    var userId = getURLParam('userId', location.search );
     if( !userId ) userId =1;
     //var userId= prompt("What's your userId?");
 
@@ -69,7 +95,8 @@
     //caught creen and stream
     var localStreamData = localScreenData = { enable: false };
 
-    var room = getLastSegmentInPath();
+    //var room = getLastSegmentInPath();
+    var room = getURLParam('room', location.search );
     var f2fWebRtcSettings = {
         url: 'localhost:3000',
         socketio: {
@@ -176,159 +203,6 @@
                 button.text(bool ? 'share screen' : 'stop sharing');
             };
 
-    webrtc.on('localStream', function ( stream ) {
-        console.log('local stream created');
-        //var localStreamMediaRecorder = new MediaStreamRecorder(stream);
-        var localStreamMediaRecorder = new MultiStreamRecorder(stream);
-        localStreamData.stream = stream;
-        localStreamData.recorder = localStreamMediaRecorder;
-
-        localStreamMediaRecorder.mimeType = 'video/webm';
-        localStreamMediaRecorder.start(3000);
-        localStreamMediaRecorder.ondataavailable = function(blob) {
-            if( localStreamData.enable != true )
-                    return;
-            // upload each blob to PHP server
-            var blobURL = window.URL.createObjectURL(blob);
-            var div = document.getElementById('localStreamList');
-            div.innerHTML += '<a href="' + blobURL + '">' + blobURL + '</a><br/>';
-            uploadToServer(blob);
-        };
-
-    });
-
-    webrtc.on('peerStreamAdded', function ( rstream ) {
-        console.log('peer stream added');
-        localStreamData.recorder.addStream(  rstream.stream  );
-    });
-
-    webrtc.on('localScreen', function ( stream ) {
-        var mediaRecorder = new MediaStreamRecorder(stream);
-
-        localScreenData.stream = stream;
-        localScreenData.recorder = mediaRecorder;
-
-        mediaRecorder.mimeType = 'video/webm';
-        mediaRecorder.start(3000);
-        mediaRecorder.ondataavailable = function(blob) {
-            if( localStreamData.enable != true )
-                return;
-            // upload each blob to PHP server
-            var blobURL = URL.createObjectURL(blob);
-            var div = document.getElementById('localScreenList');
-            div.innerHTML += '<a href="' + blobURL + '">' + blobURL + '</a><br/>';
-            uploadToServer(blob);
-        };
-
-    });
-
-    webrtc.on('localScreenStopped', function () {
-        setButton(true);
-    });
-
-
-    setButton(true);
-
-    button.click(function () {
-        if (webrtc.getLocalScreen()) {
-            webrtc.stopScreenShare();
-            setButton(true);
-        } else {
-            webrtc.shareScreen(function (err) {
-                if (err) {
-                    setButton(true);
-                } else {
-                    setButton(false);
-                }
-            });
-
-        }
-    });
-
-    function uploadToServer(blob) {
-        //@todo may be we can use differetn socket connection to upload to server
-        // using ajax os of now
-        /*
-        var file = new File([blob], "videoId:"+room+ ";userId:" + userId + ";date:" + (new Date).toISOString().replace(/:|\./g, '-') +';.webm', {
-            type: 'video/webm'
-        });
-        */
-
-        var file = new File([blob], room+ ";" + userId + ";" + (new Date).toISOString().replace(/:|\./g, '-') +';.webm', {
-            type: 'video/webm'
-        });
-        // create FormData
-        var formData = new FormData();
-        formData.append('video-filename', file.name);
-        formData.append('userId', userId);
-        formData.append('room', room );
-        formData.append('video-blob', file);
-
-        var blobSaveUrl = '//' + f2fWebRtcSettings.url + f2fWebRtcSettings.blobSavePath;
-        var blobGetPath = '//' + f2fWebRtcSettings.url + f2fWebRtcSettings.blobGetPath;
-        makeXMLHttpRequest( blobSaveUrl, formData, function( serverUrl ) {
-            var downloadURL = '//' + blobGetPath + '/' + file.name;
-            console.log('File uploaded to this path client guess:', downloadURL);
-            console.log('File uploaded to this path on server:', serverUrl );
-        });
-    }
-
-    function makeXMLHttpRequest(url, data, callback) {
-        var request = new XMLHttpRequest();
-        request.onreadystatechange = function() {
-            if (request.readyState == 4 && request.status == 200) {
-                callback( request.responseText );
-            }
-        };
-        request.open('POST', url);
-        request.send(data);
-    }
-
-
-
-    document.querySelector('#start-recording').onclick = function() {
-        this.disabled = true;
-        localScreenData.enable = localStreamData.enable = true;
-        document.querySelector('#pause-recording').disabled = false;
-        document.querySelector('#stop-recording').disabled = false;
-    };
-
-    document.querySelector('#stop-recording').onclick = function() {
-        this.disabled = true;
-        localScreenData.enable = localStreamData.enable = false;
-
-
-        localScreenData.recorder.stop();
-        if( localScreenData.recorder.stream ){
-            localScreenData.recorder.stream.stop();
-        }
-
-        localStreamData.recorder.stop();
-        localStreamData.recorder.stream.stop();
-
-        document.querySelector('#pause-recording').disabled = true;
-        document.querySelector('#start-recording').disabled = false;
-    };
-
-    document.querySelector('#pause-recording').onclick = function() {
-        this.disabled = true;
-        localScreenData.enable = localStreamData.enable = false;
-
-        localStreamData.recorder.pause();
-        localScreenData.recorder.pause();
-
-        document.querySelector('#resume-recording').disabled = false;
-    };
-
-    document.querySelector('#resume-recording').onclick = function() {
-        this.disabled = true;
-        localScreenData.enable = localStreamData.enable = true;
-
-        localStreamData.recorder.resume();
-        localScreenData.recorder.resume();
-
-        document.querySelector('#pause-recording').disabled = false;
-    };
 
 </script>
 </body>

@@ -19,6 +19,13 @@ router.post('/save', jsonParser, function (req, res) {
     })
 });
 
+router.get( '/interact', function (req, res) {
+    var data = {};
+    data.room = req.query.room;
+    data.userId = req.query.userId;
+    res.render('interact', data );
+})
+
 router.get('/', function (req, res) {
     var data = {};
     var userId = req.headers.userId;

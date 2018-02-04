@@ -4,14 +4,16 @@
  * Module dependencies.
  */
 
-process.env.NODE_CONFIG_DIR = '../config';
+process.env.NODE_CONFIG_DIR = './config';
+
+var iVConfigs = require('config');
 
 var app = require('../app').app;
 var mongo = require('./../lib/mongo');
 var redis = require('./../lib/redis');
 var async = require('async');
-var debug = require('debug')('utube_live_v2:server');
-var http = require('http');
+var debug = require('debug')('iv:server');
+//var SMSockets = require('../ext/signalmaster/sockets');
 
 /**
  * Get port from environment and store in Express.
@@ -19,6 +21,7 @@ var http = require('http');
 
 var port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
+
 
 /**
  * Create HTTP server.
@@ -45,7 +48,9 @@ var initApp = function (callback) {
 
 initApp(function (err, result) {
     server.listen(port);
+    //SMSockets(server, iVConfigs.get('signalMaster'));
 });
+
 server.on('error', onError);
 server.on('listening', onListening);
 
